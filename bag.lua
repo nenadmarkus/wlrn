@@ -6,7 +6,7 @@ require 'struct'
 
 require 'image'
 
--- HACK
+-- a brutal hack obtained somewhere on stackoverflow
 function is_dir(path)
 	--
 	local f = io.open(path, "r")
@@ -121,7 +121,7 @@ function load_bags(fname, reqn)
 	local bags = {}
 
 	for path in p:lines() do
-		print(path)
+		--print(path)
 		table.insert(bags, load_bag(path, reqn))       
 	end
 
@@ -132,43 +132,17 @@ function load_bags(fname, reqn)
 end
 
 --
-function generate_pairs(bags)
+--
+--
+
+--
+if arg[1] and arg[2] then
 	--
-	local i, j
-
-	local npos = 0
-	local nneg = 0
-
-	--
-	local ps = {}
-
-	for i=1, #bags do
-		for j=i+1, #bags do
-			if bags[i].label == bags[j].label then
-				--
-				table.insert(ps, {1, i, j})
-
-				--
-				npos = npos + 1
-			end
-		end
-	end
-
-	while nneg < npos do
-		--
-		i = math.random(1, #bags)
-		j = math.random(1, #bags)
-
-		--
-		if bags[i].label ~= bags[j].label then
-			--
-			table.insert(ps, {-1, i, j})
-
-			--
-			nneg = nneg + 1
-		end
-	end
+	torch.setdefaulttensortype('torch.FloatTensor')
 
 	--
-	return ps
+	bags = load_bags(arg[1])
+
+	--
+	torch.save(arg[2], bags)
 end
