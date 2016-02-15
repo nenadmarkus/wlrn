@@ -316,14 +316,14 @@ print('* thr = ' .. thr)
 time = sys.clock()
 tbags = load_bags(params.t)
 time = sys.clock() - time
-print('* training dataset loaded in ' .. time .. ' [s]')
+print('* training dataset loaded from "' .. params.t .. '" in ' .. time .. ' [s]')
 
 if params.v ~= "" then
 	--
 	time = sys.clock()
 	vbags = load_bags(params.v)
 	time = sys.clock() - time
-	print('* validation dataset loaded in ' .. time .. ' [s]')
+	print('* validation dataset loaded from"' .. params.v .. '" in ' .. time .. ' [s]')
 else
 	--
 	vbags = tbags
