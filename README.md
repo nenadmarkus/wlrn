@@ -43,14 +43,18 @@ nn.Sequential {
 
 ```Lua
 -- load the network first
+require 'nn'
 n = torch.load('nn/32x32_to_64.net')
 
--- generate a random batch of five 32x32 patches (each pixel should be represented as a float from [0, 1))
+-- generate a random batch of five 32x32 patches (each pixel should be represented as a float from [0, 1])
 p = torch.rand(5, 32, 32):float()
 
--- propagate the batch through the net and print results
--- (note that the net does not require any patch prepocessing (such as mean substraction) prior to descriptor extraction)
-print(n:forward(p))
+-- propagate the batch through the net to obtain descriptors
+-- (note that no patch prepocessing is required (such as mean substraction))
+d = n:forward(p)
+
+-- an appropriate similarity between descriptors is, for example, a dot product
+print(d[1]*d[2])
 ```
 
 The net parameters are stored as floats to reduce the storage requirements (i.e., the repo size).
