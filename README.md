@@ -7,8 +7,6 @@ For example, keypoint bags extracted from two images of the same object under di
 On average, matching pairs should contain more corresponding keypoints than non-matching pairs.
 We propose to learn local descriptors from such information where local correspondences are not known in advance.
 
-## The method
-
 <center><img src="teaser.png" alt="Teaser" style="width: 512px;"/></center>
 
 Each image in the dataset (first row) is processed with a keypoint detector (second row) and transformed into a bag of visual words (third row).
