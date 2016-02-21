@@ -39,6 +39,8 @@ nn.Sequential {
 }
 ```
 
+The net parameters are stored as floats to reduce the storage requirements (i.e., the repo size).
+
 ### How to use
 
 ```Lua
@@ -56,8 +58,6 @@ d = n:forward(p)
 -- an appropriate similarity between descriptors is, for example, a dot product
 print(d[1]*d[2])
 ```
-
-The net parameters are stored as floats to reduce the storage requirements (i.e., the repo size).
 
 ### How to repeat the training
 
