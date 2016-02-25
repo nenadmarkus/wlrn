@@ -19,7 +19,7 @@ We will add a technical report with more details soon.
 
 ## Some results (to be updated soon)
 
-A network trained with our method (code in this repo) can be obtained from `nn/32x32_to_64.net` (in Torch7 format).
+A network trained with our method (code in this repo) can be obtained from the folder `models/`.
 This network extracts `64f` descriptors of unit length from local grayscale patches of size `32x32`.
 
 ```
@@ -39,44 +39,59 @@ nn.Sequential {
 }
 ```
 
-The net parameters are stored as floats to reduce the storage requirements (i.e., the repo size).
+The net parameters are stored as a vector of floats to reduce the storage requirements (i.e., the repo size).
+The next subsection shows how to use them.
 
 ### How to use
 
 ```Lua
--- load the network first
-require 'nn'
-n = torch.load('nn/32x32_to_64.net')
+-- load the network parameters first
+params = torch.load('models/32x32_to_64.params')
 
--- generate a random batch of five 32x32 patches (each pixel should be represented as a float from [0, 1])
+-- create the network and initialize its weights with loaded data
+require 'models/nets'
+n = get_32x32_to_64(params)
+
+-- generate a random batch of five 32x32 patches (each pixel is a float from [0, 1])
 p = torch.rand(5, 32, 32):float()
 
 -- propagate the batch through the net to obtain descriptors
 -- (note that no patch prepocessing is required (such as mean substraction))
 d = n:forward(p)
 
--- an appropriate similarity between descriptors is, for example, a dot product
+-- an appropriate similarity between descriptors is, for example, a dot product ...
 print(d[1]*d[2])
+
+-- ... or you can use the Euclidean distance
+print(torch.norm(d[1] - d[2]))
 ```
 
 ### How to repeat the training
 
 First, download the training and validation datasets in Torch7 format from <http://46.101.250.137/data/>.
 
-Next, run the traininig script:
+Next, specify the descriptor extractor network structure by entering the following code in the Torch terminal:
 
-	th wlrn.lua 32x32.ukb-trn.t7 -v 32x32.ukb-val.t7 -w params.t7 -n 128
+```Lua
+require 'models/nets'
+n = get_32x32_to_64()
+torch.save('net.t7', n)
+```
 
-The training should finish in about 3 days on a GeForce GTX 970.
-The file `params.t7` contains the learned parameters of the network.
+Finally, learn the parameters of the network by running the traininig script:
+
+	th wlrn.lua net.t7 32x32.ukb-trn.t7 -v 32x32.ukb-val.t7 -w params.t7 -n 128
+
+The training should finish in about a day on a GeForce GTX 970 with cuDNN.
+The file `params.t7` contains the learned parameters of `net.t7`.
 Use the following code to deploy them:
 ```Lua
-require 'models'
-n = get_32x32_to_64():float()
+n = torch.load('net.t7'):float()
 p = n:getParameters()
 p:copy(torch.load('params.t7'))
-torch.save('nn/32x32_to_64.new.net', n)
+torch.save('net.t7', n)
 ```
+
 ## Contact
 
 For any additional information contact me at <nenad.markus@fer.hr>.

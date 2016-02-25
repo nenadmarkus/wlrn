@@ -4,19 +4,58 @@ require 'torch'
 require 'cunn'
 require 'optim'
 
-require 'bag'
+----------------------------------------------------------------------------------------------------
+---------------- pairwise cosine similarity between keypoint bags ----------------------------------
+----------------------------------------------------------------------------------------------------
 
-require 'models'
+local PCosSim, parent = torch.class('nn.PCosSim', 'nn.Module')
 
-require 'PCosSim'
+function PCosSim:__init()
+	--
+	parent.__init(self)
 
------------------------------------------------------------------------------
---------------------- parse command line options ----------------------------
------------------------------------------------------------------------------
+	--
+	self.gradInput = {torch.Tensor(), torch.Tensor()}
+end
+
+function PCosSim:updateOutput(input)
+	--
+	local X = input[1]
+	local Y = input[2]
+
+	--
+	self.output = X*Y:t()
+
+	return self.output
+end
+
+function PCosSim:updateGradInput(input, gradOutput)
+	--
+	local X = input[1]
+	local Y = input[2]
+
+	--
+	local dLdS = gradOutput
+
+	local dLdX = dLdS*Y
+	local dLdY = dLdS:t()*X
+
+	--
+	self.gradInput[1] = dLdX
+	self.gradInput[2] = dLdY
+
+	--
+	return self.gradInput
+end
+
+----------------------------------------------------------------------------------------------------
+--------------------- parse command line options ---------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
+cmd:argument("-e", "encoder structure (neural net in Torch7 format)")
 cmd:argument("-t", "training data")
 cmd:text("Options")
 cmd:option("-v", "", "validation data")
@@ -26,16 +65,19 @@ cmd:option("-n", "", "number of epochs")
 
 params = cmd:parse(arg)
 
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 --
 torch.setdefaulttensortype('torch.FloatTensor')
 
 --
-E = get_32x32_to_64()
+E = torch.load(params.e):float()
 
+print(E)
+
+--
 E3 = nn.ParallelTable()
 E3:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
 E3:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
@@ -69,6 +111,12 @@ usegpu = true
 if usegpu then
 	--
 	T = T:cuda()
+
+	-- if you don't have cuDNN installed, please comment out the following four line (beware: cunn is *significantly* slower than cuDNN)
+	require 'cudnn'
+	cudnn.benchmark = true
+	cudnn.fastest = true
+	cudnn.convert(T, cudnn)
 end
 
 pT, gT = T:getParameters()
@@ -108,9 +156,9 @@ end
 ---
 ---
 
------------------------------------------------------------------------------------------------
------------------------------ loss computation ------------------------------------------------
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------- loss computation -----------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 eps = 1e-6
 
@@ -158,9 +206,9 @@ function compute_average_loss(triplets)
 	return avgloss
 end
 
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 function generate_triplets(bags, n)
 	--
@@ -206,24 +254,24 @@ function generate_triplets(bags, n)
 	for i=1, #subset do
 		for j=i+1, #subset do
 			if subset[i].label == subset[j].label then
-				--
-				stop = false
-
-				while not stop do
+				for k=1, 3 do -- generate 3 triplets for each matching pair
 					--
-					k = math.random(1, #subset)
+					local stop = false
 
-					--
-					if subset[i].label ~= subset[k].label then
+					while not stop do
 						--
-						stop = true
+						q = math.random(1, #subset)
+
+						--
+						if subset[i].label ~= subset[q].label then
+							--
+							stop = true
+						end
 					end
+
+					--
+					table.insert(triplets, {subset[i].data, subset[j].data, subset[q].data})
 				end
-
-				--
-				table.insert(triplets, {subset[i].data, subset[j].data, subset[k].data})
-
-				--
 			end
 		end
 	end
@@ -241,6 +289,8 @@ function apply_optim_sgd_step(triplets, batch, eta)
 		end
 
 		--
+		gT:zero()
+
 		local loss = 0.0
 
 		for i=1, #batch do
@@ -271,6 +321,11 @@ function apply_optim_sgd_step(triplets, batch, eta)
 		--
 		loss = loss/#batch
 		gT:div(#batch)
+
+		-- regularization
+		--coeff = 1e-4
+		--loss = loss + coeff*torch.norm(x)^2/2
+		--gT:add( x:clone():mul(coeff) )
 
 		--
 		return loss, gT
@@ -305,25 +360,25 @@ function train_with_sgd(triplets, niters, bsize, eta)
 	--
 end
 
------------------------------------------------------------------------------------------------
------------------------------ initialize stuff ------------------------------------------------
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------- initialize stuff -----------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 --
 print('* thr = ' .. thr)
 
 --
 time = sys.clock()
-tbags = load_bags(params.t)
+tbags = torch.load(params.t) --load_bags(params.t)
 time = sys.clock() - time
 print('* training dataset loaded from "' .. params.t .. '" in ' .. time .. ' [s]')
 
 if params.v ~= "" then
 	--
 	time = sys.clock()
-	vbags = load_bags(params.v)
+	vbags = torch.load(params.v) --load_bags(params.v)
 	time = sys.clock() - time
-	print('* validation dataset loaded from"' .. params.v .. '" in ' .. time .. ' [s]')
+	print('* validation dataset loaded from "' .. params.v .. '" in ' .. time .. ' [s]')
 else
 	--
 	vbags = tbags
@@ -338,9 +393,9 @@ else
 	nepoch = 64
 end
 
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 --
 time = sys.clock()
@@ -371,9 +426,6 @@ for i = 1, nepoch do
 	time = sys.clock() - time
 	print('    ** ' .. #ttriplets .. ' triplets generated in ' .. time .. ' [s]')
 
-	--e = compute_average_loss(ttriplets)
-	--print("    ** average loss (trn): " .. e)
-
 	--
 	print('    ** eta=' .. eta .. ', bsize=' .. bsize)
 
@@ -384,6 +436,8 @@ for i = 1, nepoch do
 
 	print("    ** elapsed time: " .. time .. " [s]")
 
+	e = compute_average_loss(ttriplets)
+	print("    ** average loss (trn): " .. e)
 	e = compute_average_loss(vtriplets)
 	print("    ** average loss (val): " .. e)
 
