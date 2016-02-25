@@ -58,7 +58,6 @@ function get_3x32x32_to_64(p)
 	conv:add(nn.SpatialConvolution(32, 64, 6, 6))
 
 	--
-	--
 	local encoder = nn.Sequential()
 
 	encoder:add(nn.View(3, 32, 32))
