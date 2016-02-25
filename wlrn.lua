@@ -105,20 +105,16 @@ T = nn.Sequential()
 T:add(E3)
 T:add(C)
 
--- cuda?
-usegpu = true
+-- cuda
+T = T:cuda()
 
-if usegpu then
-	--
-	T = T:cuda()
+-- if you don't have cuDNN installed, please comment out the following four line (beware: cunn is *significantly* slower than cuDNN)
+require 'cudnn'
+cudnn.benchmark = true
+cudnn.fastest = true
+cudnn.convert(T, cudnn)
 
-	-- if you don't have cuDNN installed, please comment out the following four line (beware: cunn is *significantly* slower than cuDNN)
-	require 'cudnn'
-	cudnn.benchmark = true
-	cudnn.fastest = true
-	cudnn.convert(T, cudnn)
-end
-
+--
 pT, gT = T:getParameters()
 
 if params.r ~= "" then
@@ -128,13 +124,7 @@ if params.r ~= "" then
 	p = torch.load(params.r)
 
 	--
-	if usegpu then
-		--
-		pT:copy(p:cuda())
-	else
-		--
-		pT:copy(p)
-	end
+	pT:copy(p)
 end
 
 print('* the model has ' .. pT:size()[1] .. ' parameters')
@@ -179,11 +169,9 @@ function loss_backward(v)
 	gap = torch.ones(n):mul(-san/(sap+eps)^2):mul(1.0/n)
 	gan = torch.ones(n):mul(1.0/(sap+eps)):mul(1.0/n)
 
-	if usegpu then
-		--
-		gap = gap:cuda()
-		gan = gan:cuda()
-	end
+	--
+	gap = gap:cuda()
+	gan = gan:cuda()
 
 	--
 	return {gap, gan}
@@ -195,7 +183,14 @@ function compute_average_loss(triplets)
 
 	for i=1, #triplets do
 		--
-		local v = model_forward(triplets[i])
+		local triplet = {
+			triplets[i][1]:clone():cuda(),
+			triplets[i][2]:clone():cuda(),
+			triplets[i][3]:clone():cuda()
+		}
+
+		--
+		local v = model_forward(triplet)
 
 		avgloss = avgloss + loss_forward(v)
 	end
@@ -237,14 +232,10 @@ function generate_triplets(bags, n)
 		bag.label = bags[ p[i] ].label
 		bag.filename = bags[ p[i] ].filename
 
-		if usegpu then
-			--
-			bag.data = bags[ p[i] ].data:cuda()
-		else
-			--
-			bag.data = bags[ p[i] ].data -- :clone() not needed???
-		end
+		--
+		bag.data = bags[ p[i] ].data
 
+		--
 		subset[1+#subset] = bag
 	end
 
@@ -295,7 +286,11 @@ function apply_optim_sgd_step(triplets, batch, eta)
 
 		for i=1, #batch do
 			--
-			local triplet = triplets[batch[i]]
+			local triplet = {
+				triplets[batch[i]][1]:clone():cuda(),
+				triplets[batch[i]][2]:clone():cuda(),
+				triplets[batch[i]][3]:clone():cuda()
+			}
 
 			-- forward pass
 			--

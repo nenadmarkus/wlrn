@@ -121,7 +121,7 @@ function load_bags(fname, reqn)
 	local bags = {}
 
 	for path in p:lines() do
-		--print(path)
+		print(path)
 		table.insert(bags, load_bag(path, reqn))       
 	end
 
