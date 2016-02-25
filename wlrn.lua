@@ -387,10 +387,10 @@ end
 --
 if params.n ~= "" then
 	--
-	nepoch = tonumber(params.n)
+	nrounds = tonumber(params.n)
 else
 	--
-	nepoch = 64
+	nrounds = 128
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -415,7 +415,7 @@ print("    ** elapsed time: " .. time .. " [s]")
 eta = 1e-3
 bsize = 8
 
-for i = 1, nepoch do
+for i = 1, nrounds do
 	--
 	--
 	print("* SGD (" .. i .. ")")

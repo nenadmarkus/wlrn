@@ -21,6 +21,7 @@ We will add a technical report with more details soon.
 
 A network trained with our method (code in this repo) can be obtained from the folder `models/`.
 This network extracts `64f` descriptors of unit length from local grayscale patches of size `32x32`.
+Here is its structure:
 
 ```
 nn.Sequential {
@@ -39,8 +40,9 @@ nn.Sequential {
 }
 ```
 
-The net parameters are stored as a vector of floats to reduce the storage requirements (i.e., the repo size).
-The next subsection shows how to use them.
+The net parameters are stored as a vector of floats at `models/32x32_to_64.params`.
+This is to reduce the storage requirements (i.e., the repo size).
+The next subsection shows how to deploy the net.
 
 ### How to use
 
@@ -80,7 +82,7 @@ torch.save('net.t7', n)
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua net.t7 32x32.ukb-trn.t7 -v 32x32.ukb-val.t7 -w params.t7 -n 128
+	th wlrn.lua net.t7 32x32.ukb-trn.t7 -v 32x32.ukb-val.t7 -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
 The file `params.t7` contains the learned parameters of `net.t7`.
