@@ -42,9 +42,7 @@ nn.Sequential {
 
 The net parameters are stored as a vector of floats at `models/32x32_to_64.params`.
 This is to reduce the storage requirements (i.e., the repo size).
-The next subsection shows how to deploy the net.
-
-### How to use
+Use the following code to deploy and use the net.
 
 ```Lua
 -- load the network parameters first
@@ -68,21 +66,49 @@ print(d[1]*d[2])
 print(torch.norm(d[1] - d[2]))
 ```
 
-### How to repeat the training
+## How to repeat the training
 
-First, download the training and validation datasets in Torch7 format from <http://46.101.250.137/data/>.
+Follow these steps.
 
-Next, specify the descriptor extractor network structure by entering the following code in the Torch terminal:
+#### 1. Prepare bags of keypoints
+
+Download <http://46.101.250.137/data/ukb.tar> and extract the archive.
+It contains two folders with JPG images: `ukb-trn/` and `ukb-val/`.
+Images from the first folder will be used for training and images from the second one for checking the validation error.
+
+Move to the folder `utils/` and compile `fast.cpp` and `extp.cpp` with the provided `makefile`.
+These are the keypoint detection and patch extraction programs.
+Use the script `batch_extract.sh` to transform the downloaded images into bags of keypoints:
+```
+bash batch_extract.sh ukb-trn/ ukb-trn-bags/
+bash batch_extract.sh ukb-val/ ukb-val-bags/
+```
+
+To complete the data preparation procedure, run the script `bagio.lua` to store the generated bags in Torch7 format:
+```
+th bagio ukb-trn-bags/ ukb-trn.t7
+th bagio ukb-val-bags/ ukb-val.t7
+```
+
+#### 2. Specify the descriptor extractor structure
+
+The default models are available in `models/nets.lua`.
+Enter the following code in the Torch7 terminal:
 
 ```Lua
 require 'models/nets'
-n = get_32x32_to_64()
+n = get_32x32_to_64():float()
 torch.save('net.t7', n)
 ```
 
+Of course, you can try different networks.
+However, to learn their parameters, some parts of the learning script might need additional tweaking (such as learning rates).
+
+#### 3. Start the learning script
+
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua net.t7 32x32.ukb-trn.t7 -v 32x32.ukb-val.t7 -w params.t7
+	th wlrn.lua net.t7 ukb-trn.t7 -v ukb-val.t7 -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
 The file `params.t7` contains the learned parameters of `net.t7`.
