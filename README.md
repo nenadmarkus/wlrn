@@ -22,13 +22,15 @@ The details of the method can be found in our technical report (available [here]
 If you use our results and/or ideas, please cite the report as (BibTeX)
 
 ```
-@misc
+@techreport
 {
 	wlrn,
 	author = {Nenad Markus},
-	title = {Learning Local Descriptors from Weakly-Labeled Data},
+	title = {{Learning Local Descriptors from Weakly-Labeled Data}},
+	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
+	address = {Unska 3, 10000 Zagreb},
 	year = {2016},
-	howpublished = {\url{https://github.com/nenadmarkus/wlrn}}
+	note = {\url{https://github.com/nenadmarkus/wlrn}}
 }
 ```
 
