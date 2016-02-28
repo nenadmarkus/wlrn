@@ -1,4 +1,4 @@
-# Learning Local Convolutional Descriptors from Weakly-Labeled Data
+# Learning Local Descriptors from Weakly-Labeled Data
 
 Current best local descriptors are learned on a large dataset of matching and non-matching keypoint pairs.
 However, data of this kind is not always available since detailed keypoint correspondences can be hard to establish (e.g., for non-image data).
@@ -15,7 +15,22 @@ On average, matching pairs should contain more corresponding local visual words 
 We propose to *learn local descriptors* by optimizing the mentioned local correspondence criterion on a given dataset.
 Note that prior work assumes local correspondences are known in advance.
 
-We will add a technical report with more details soon.
+The details of the method can be found in our technical report (available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf)):
+
+> N. Markus, "Learning Local Descriptors from Weakly-Labeled Data", <https://github.com/nenadmarkus/wlrn>, February 2016
+
+If you use our results and/or ideas, please cite the report as (BibTeX)
+
+```
+@misc
+{
+	wlrn,
+	author = {Nenad Markus},
+	title = {Learning Local Descriptors from Weakly-Labeled Data},
+	year = {2016},
+	howpublished = {\url{https://github.com/nenadmarkus/wlrn}}
+}
+```
 
 ## Some results (to be updated soon)
 
