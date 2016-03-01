@@ -103,8 +103,8 @@ bash batch_extract.sh ukb-val/ ukb-val-bags/
 
 To complete the data preparation procedure, run the script `bagio.lua` to store the generated bags in Torch7 format:
 ```
-th bagio ukb-trn-bags/ ukb-trn.t7
-th bagio ukb-val-bags/ ukb-val.t7
+th bagio.lua ukb-trn-bags/ ukb-trn.t7
+th bagio.lua ukb-val-bags/ ukb-val.t7
 ```
 
 #### 2. Specify the descriptor extractor structure
