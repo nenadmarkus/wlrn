@@ -86,20 +86,20 @@ end
 --
 function store_bag(bag, path)
 	--
-	n = bag.data:size(1)
-	descsize = bag.data:size(2)
+	local n = bag.data:size(1)
+	local descsize = bag.data:size(2)
 
 	--
-	file = io.open(path, "wb")
+	local file = io.open(path, "wb")
 	file:write(struct.pack("c4ii", bag.magic, descsize, n))
 
 	--
 	for i=1, n do
 		--
-		tmp = bag.data[i]:totable()
+		local tbl = bag.data[i]:totable()
 
 		--
-		file:write(struct.pack(string.rep("f", descsize), unpack(tmp)))
+		file:write(struct.pack(string.rep("f", descsize), unpack(tbl)))
 	end
 
 	--

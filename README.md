@@ -28,7 +28,7 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 	author = {Nenad Markus},
 	title = {{Learning Local Descriptors from Weakly-Labeled Data}},
 	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
-	address = {Unska 3, 10000 Zagreb},
+	address = {Unska 3, 10000 Zagreb, Croatia},
 	year = {2016},
 	note = {\url{https://github.com/nenadmarkus/wlrn}}
 }
@@ -67,7 +67,7 @@ params = torch.load('models/32x32_to_64.params')
 
 -- create the network and initialize its weights with loaded data
 require 'models/nets'
-n = get_32x32_to_64(params)
+n = get_32x32_to_64(params):float()
 
 -- generate a random batch of five 32x32 patches (each pixel is a float from [0, 1])
 p = torch.rand(5, 32, 32):float()

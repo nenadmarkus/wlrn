@@ -74,7 +74,6 @@ torch.setdefaulttensortype('torch.FloatTensor')
 
 --
 E = torch.load(params.e):float()
-
 print(E)
 
 --
