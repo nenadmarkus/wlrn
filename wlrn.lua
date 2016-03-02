@@ -11,7 +11,7 @@ require 'optim'
 cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
-cmd:argument("-e", "encoder structure (neural net in Torch7 format)")
+cmd:argument("-e", "path to the Lua script which specifies the descriptor extractor structure")
 cmd:argument("-t", "training data")
 cmd:text("Options")
 cmd:option("-v", "", "validation data")
