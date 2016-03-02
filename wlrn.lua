@@ -88,7 +88,8 @@ M = nn.Sequential()
 thr = 0.8
 beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 
-M:add( nn.PCosSim() )
+--M:add( nn.PCosSim() ) -- we don't need PCosSim ???
+M:add( nn.MM(false, true) )
 M:add( nn.AddConstant(1.0)):add(nn.MulConstant(0.5) ) -- rescale similarities to [0, 1]
 M:add( nn.Sequential():add(nn.AddConstant(-thr)):add(nn.MulConstant(beta)):add(nn.Sigmoid()) ) -- kill all scores below the threshold
 M:add( nn.Max(2) )
