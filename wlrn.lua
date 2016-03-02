@@ -5,50 +5,6 @@ require 'cunn'
 require 'optim'
 
 ----------------------------------------------------------------------------------------------------
----------------- pairwise cosine similarity between keypoint bags ----------------------------------
-----------------------------------------------------------------------------------------------------
-
-local PCosSim, parent = torch.class('nn.PCosSim', 'nn.Module')
-
-function PCosSim:__init()
-	--
-	parent.__init(self)
-
-	--
-	self.gradInput = {torch.Tensor(), torch.Tensor()}
-end
-
-function PCosSim:updateOutput(input)
-	--
-	local X = input[1]
-	local Y = input[2]
-
-	--
-	self.output = X*Y:t()
-
-	return self.output
-end
-
-function PCosSim:updateGradInput(input, gradOutput)
-	--
-	local X = input[1]
-	local Y = input[2]
-
-	--
-	local dLdS = gradOutput
-
-	local dLdX = dLdS*Y
-	local dLdY = dLdS:t()*X
-
-	--
-	self.gradInput[1] = dLdX
-	self.gradInput[2] = dLdY
-
-	--
-	return self.gradInput
-end
-
-----------------------------------------------------------------------------------------------------
 --------------------- parse command line options ---------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
@@ -73,7 +29,7 @@ params = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
 
 --
-E = torch.load(params.e):float()
+E = dofile(params.e)()
 print(E)
 
 --
@@ -88,7 +44,6 @@ M = nn.Sequential()
 thr = 0.8
 beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 
---M:add( nn.PCosSim() ) -- we don't need PCosSim ???
 M:add( nn.MM(false, true) )
 M:add( nn.AddConstant(1.0)):add(nn.MulConstant(0.5) ) -- rescale similarities to [0, 1]
 M:add( nn.Sequential():add(nn.AddConstant(-thr)):add(nn.MulConstant(beta)):add(nn.Sigmoid()) ) -- kill all scores below the threshold
@@ -217,10 +172,7 @@ function generate_triplets(bags, n)
 		n = math.min(n, #bags)
 	end
 
-	--
-	-- select a random subset of bags (this is important for memory issues)
-	--
-
+	-- select a random subset of bags
 	local p = torch.randperm(#bags)
 	local subset = {}
 
@@ -248,6 +200,7 @@ function generate_triplets(bags, n)
 				for k=1, 3 do -- generate 3 triplets for each matching pair
 					--
 					local stop = false
+					local q
 
 					while not stop do
 						--
@@ -364,14 +317,14 @@ print('* thr = ' .. thr)
 
 --
 time = sys.clock()
-tbags = torch.load(params.t) --load_bags(params.t)
+tbags = torch.load(params.t)
 time = sys.clock() - time
 print('* training dataset loaded from "' .. params.t .. '" in ' .. time .. ' [s]')
 
 if params.v ~= "" then
 	--
 	time = sys.clock()
-	vbags = torch.load(params.v) --load_bags(params.v)
+	vbags = torch.load(params.v)
 	time = sys.clock() - time
 	print('* validation dataset loaded from "' .. params.v .. '" in ' .. time .. ' [s]')
 else

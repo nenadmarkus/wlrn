@@ -38,3 +38,6 @@ function get_32x32_to_64(p)
 	--
     return encoder
 end
+
+--
+return get_32x32_to_64

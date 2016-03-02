@@ -57,6 +57,7 @@ nn.Sequential {
 }
 ```
 
+The structure is specified in `models/32x32_to_64.lua`.
 The net parameters are stored as a vector of floats at `models/32x32_to_64.params`.
 This is to reduce the storage requirements (i.e., the repo size).
 Use the following code to deploy and use the net.
@@ -66,8 +67,7 @@ Use the following code to deploy and use the net.
 params = torch.load('models/32x32_to_64.params')
 
 -- create the network and initialize its weights with loaded data
-require 'models/nets'
-n = get_32x32_to_64(params):float()
+n = dofile('models/32x32_to_64.lua')(params):float()
 
 -- generate a random batch of five 32x32 patches (each pixel is a float from [0, 1])
 p = torch.rand(5, 32, 32):float()
@@ -109,29 +109,23 @@ th bagio.lua ukb-val-bags/ ukb-val.t7
 
 #### 2. Specify the descriptor extractor structure
 
-The default models are available in `models/nets.lua`.
-Enter the following code in the Torch7 terminal:
+The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
+See the default model in `models/32x32_to_64.lua` for an example.
 
-```Lua
-require 'models/nets'
-n = get_32x32_to_64():float()
-torch.save('net.t7', n)
-```
-
-Of course, you can try different networks.
-However, to learn their parameters, some parts of the learning script might need additional tweaking (such as learning rates).
+Of course, you can try different architectures.
+However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking (such as learning rates).
 
 #### 3. Start the learning script
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua net.t7 ukb-trn.t7 -v ukb-val.t7 -w params.t7
+	th wlrn.lua models/32x32_to_64.lua net.t7 ukb-trn.t7 -v ukb-val.t7 -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
-The file `params.t7` contains the learned parameters of `net.t7`.
+The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/32x32_to_64.lua`.
 Use the following code to deploy them:
 ```Lua
-n = torch.load('net.t7'):float()
+n = dofile('models/32x32_to_64.lua')():float()
 p = n:getParameters()
 p:copy(torch.load('params.t7'))
 torch.save('net.t7', n)
