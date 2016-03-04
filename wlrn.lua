@@ -17,7 +17,7 @@ cmd:text("Options")
 cmd:option("-v", "", "validation data")
 cmd:option("-r", "", "read weights in Torch7 format")
 cmd:option("-w", "", "write weights in Torch7 format")
-cmd:option("-n", "", "number of epochs")
+cmd:option("-n", "", "number of training rounds")
 
 params = cmd:parse(arg)
 

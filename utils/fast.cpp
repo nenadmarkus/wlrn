@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <math.h>
 
-// opencv
-#include <core/core.hpp>
-#include <highgui/highgui.hpp>
+// opencv 3.x required
+#include <opencv2/opencv.hpp>
+/*
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
 #include <features2d/features2d.hpp>
 #include <imgproc/imgproc.hpp>
+*/
 
 /*
 	

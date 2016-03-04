@@ -25,7 +25,7 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 @techreport
 {
 	wlrn,
-	author = {Nenad Markus},
+	author = {Nenad Marku\v{s}},
 	title = {{Learning Local Descriptors from Weakly-Labeled Data}},
 	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
 	address = {Unska 3, 10000 Zagreb, Croatia},

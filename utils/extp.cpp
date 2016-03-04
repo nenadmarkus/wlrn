@@ -1,10 +1,19 @@
 #include <stdio.h>
+#include <vector>
 
-// opencv
+// opencv 3.x required
+#include <opencv2/opencv.hpp>
+
+//#include <opencv2/features2d.hpp>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/imgcodecs.hpp>
+
+/*
 #include <core/core.hpp>
 #include <highgui/highgui.hpp>
 #include <features2d/features2d.hpp>
 #include <imgproc/imgproc.hpp>
+*/
 
 /*
 	
@@ -22,7 +31,7 @@ public:
 	PatchExtractor(int _side, float _resize){side=_side; resize=_resize; usecolor=0; prefix=0;};
 
 	// interface methods inherited from cv::DescriptorExtractor
-	virtual void compute(const Mat& image, vector<KeyPoint>& keypoints, Mat& descriptors ) const
+	virtual void compute(const Mat& image, std::vector<KeyPoint>& keypoints, Mat& descriptors ) const
 	{
 		int i, patchSize;
 
@@ -97,7 +106,7 @@ public:
 			return side*side;
 	}
 	virtual int descriptorType() const {return CV_32FC1;}
-	virtual void computeImpl(const Mat&  image, vector<KeyPoint>& keypoints, Mat& descriptors) const
+	virtual void computeImpl(const Mat&  image, std::vector<KeyPoint>& keypoints, Mat& descriptors) const
 	{
 		compute(image, keypoints, descriptors);
 	}
