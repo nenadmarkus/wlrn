@@ -22,6 +22,8 @@ SIZE=1.5
 for f in `cd $SRC; ls *.jpg`;
 do
 	./fast $SRC/$f $NKPS | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
+	#python sift.py $SRC/$f $NKPS | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
+	#cat <(python sift.py $SRC/$f $NKPS) <(./fast $SRC/$f $NKPS) | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
 done
 
 #

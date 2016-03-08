@@ -25,6 +25,11 @@ function load_bag(path, reqn)
 	file:close()
 
 	--
+	if n<8 then -- we require at least 8 keypoints per bag
+		--
+		return nil
+	end
+
 	if reqn then
 		if n < reqn then
 			return nil

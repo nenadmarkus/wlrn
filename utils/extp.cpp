@@ -4,17 +4,6 @@
 // opencv 3.x required
 #include <opencv2/opencv.hpp>
 
-//#include <opencv2/features2d.hpp>
-//#include <opencv2/highgui.hpp>
-//#include <opencv2/imgcodecs.hpp>
-
-/*
-#include <core/core.hpp>
-#include <highgui/highgui.hpp>
-#include <features2d/features2d.hpp>
-#include <imgproc/imgproc.hpp>
-*/
-
 /*
 	
 */
