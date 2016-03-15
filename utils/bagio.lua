@@ -6,15 +6,6 @@ require 'struct'
 
 require 'image'
 
--- a brutal hack obtained somewhere on stackoverflow
-function is_dir(path)
-	--
-	local f = io.open(path, "r")
-	local ok, err, code = f:read(1)
-	f:close()
-	return code == 21
-end
-
 --
 function load_bag(path, reqn)
 	--
@@ -52,7 +43,7 @@ function load_bag(path, reqn)
 		end
 
 		--
-		data = torch.Tensor(tbl):view(n, dim)
+		data = torch.Tensor(tbl):float():view(n, dim)
 
 		--
 		--for i=1, n do
@@ -96,6 +87,13 @@ function store_bag(bag, path)
 
 	--
 	local file = io.open(path, "wb")
+
+	if not file then
+		--
+		print('cannot write to ' .. path)
+		return
+	end
+
 	file:write(struct.pack("c4ii", bag.magic, descsize, n))
 
 	--
@@ -114,13 +112,6 @@ end
 --
 function load_bags(fname, reqn)
 	--
-	-- see first if 'fname' points to a file
-	if not is_dir(fname) then
-		--
-		return torch.load(fname)
-	end
-
-	--
 	local p = io.popen('ls ' .. fname .. '/*.bag')
 
 	local bags = {}
@@ -134,20 +125,4 @@ function load_bags(fname, reqn)
 
 	--
 	return bags
-end
-
---
---
---
-
---
-if arg[1] and arg[2] then
-	--
-	torch.setdefaulttensortype('torch.FloatTensor')
-
-	--
-	bags = load_bags(arg[1])
-
-	--
-	torch.save(arg[2], bags)
 end
