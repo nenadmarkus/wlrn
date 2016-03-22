@@ -387,7 +387,7 @@ for i = 1, nrounds do
 	e = compute_average_loss(ttriplets)
 	print("    ** average loss (trn): " .. e)
 	e = compute_average_loss(vtriplets)
-	print("    ** average loss (val): " .. e)
+	print("    ** average loss (vld): " .. e)
 
 	if e<ebest then
 		--

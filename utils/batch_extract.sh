@@ -15,14 +15,16 @@ mkdir -p $DST
 (cd $DST/; rm *.bag; rm list;)
 
 #
-NKPS=75
-NPIX=32
+NKPS=$3
+NPIX=$4
+
 SIZE=1.5
 
 for f in `cd $SRC; ls *.jpg`;
 do
-	./fast $SRC/$f $NKPS | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
+	#./fast $SRC/$f $NKPS | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
 	#cat <(python sift.py $SRC/$f $NKPS) <(./fast $SRC/$f $NKPS) | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
+	cat <(python surf.py $SRC/$f $NKPS) <(python orb.py $SRC/$f $NKPS) | ./extp $SRC/$f $NPIX $SIZE $DST/$f.bag
 done
 
 #

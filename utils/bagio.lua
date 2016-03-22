@@ -7,7 +7,7 @@ require 'struct'
 require 'image'
 
 --
-function load_bag(path, reqn)
+function load_bag(path)
 	--
 	local file = io.open(path, "rb")
 	local magic, dim, n = struct.unpack("c4ii", file:read(12))
@@ -21,36 +21,46 @@ function load_bag(path, reqn)
 		return nil
 	end
 
-	if reqn then
-		if n < reqn then
-			return nil
-		else
-			n = reqn
-		end
+	--
+	typ = string.sub(magic, 1, 1)
+
+	if typ~='f' and typ~='B' then
+		return nil
 	end
 
-	if string.sub(magic, 1, 1)=='f' then
-		--
-		local tbl = {}
+	--
+	local tbl = {}
 
-		for i=1, n do
+	for i=1, n do
+		--
+		for j=1, dim do
 			--
-			for j=1, dim do
+			if typ=='f' then
 				--
-				tbl[#tbl + 1] = struct.unpack("f", bytes, 4*(i-1)*dim + 4*(j-1)+1)
+				tbl[#tbl + 1] = struct.unpack(typ, bytes, 4*(i-1)*dim + 4*(j-1)+1)
+			else
+				--
+				tbl[#tbl + 1] = struct.unpack(typ, bytes, (i-1)*dim + (j-1)+1)
 			end
-		--
 		end
-
-		--
-		data = torch.Tensor(tbl):float():view(n, dim)
-
-		--
-		--for i=1, n do
-		--	--
-		--	image.save("work/" .. i .. ".png", data[i]:view(32, 32))
-		--end
+	--
 	end
+
+	--
+	local data = torch.Tensor(tbl)
+
+	if typ=='f' then
+		data = data:float():view(n, dim)
+	else
+		data = data:byte():view(n, dim)
+	end
+
+	--
+	--os.execute('mkdir -p patches/')
+	--for i=1, n do
+	--	--
+	--	image.save("patches/p" .. i .. ".png", data[i]:view(32, 32))
+	--end
 
 	-- get label
 	local tmp = {}
@@ -65,7 +75,7 @@ function load_bag(path, reqn)
 		table.insert(label, t)
 	end
 
-	filename = tmp[#tmp]
+	local filename = tmp[#tmp]
 	label = label[1]
 
 	--
@@ -110,15 +120,22 @@ function store_bag(bag, path)
 end
 
 --
-function load_bags(fname, reqn)
+function load_bags(folder, prob)
 	--
-	local p = io.popen('ls ' .. fname .. '/*.bag')
+	if not prob then
+		prob = 1.0
+	end
+
+	--
+	local p = io.popen('ls ' .. folder .. '/*.bag')
 
 	local bags = {}
 
 	for path in p:lines() do
-		print(path)
-		table.insert(bags, load_bag(path, reqn))       
+		if math.random()<=prob then
+			--print(path)
+			table.insert(bags, load_bag(path))
+		end
 	end
 
 	p:close()

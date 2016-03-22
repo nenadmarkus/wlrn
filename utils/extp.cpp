@@ -8,6 +8,8 @@
 	
 */
 
+#define USECOLOR 0
+
 namespace PatchExt
 {
 
@@ -16,8 +18,8 @@ using namespace cv;
 class PatchExtractor: public DescriptorExtractor
 {
 public:
-	PatchExtractor(){side=32; resize=1.5f; usecolor=0; prefix=0;};
-	PatchExtractor(int _side, float _resize){side=_side; resize=_resize; usecolor=0; prefix=0;};
+	PatchExtractor(){side=32; resize=1.5f; usecolor=USECOLOR; prefix=0;};
+	PatchExtractor(int _side, float _resize){side=_side; resize=_resize; usecolor=USECOLOR; prefix=0;};
 
 	// interface methods inherited from cv::DescriptorExtractor
 	virtual void compute(const Mat& image, std::vector<KeyPoint>& keypoints, Mat& descriptors ) const
@@ -36,28 +38,26 @@ public:
 		for(i=0; i<keypoints.size(); ++i)
 		{
 			Mat patch;
-			float* d;
+			uint8_t* d;
 			int r, c;
 
 			//
 			rectifyPatch(image, keypoints[i], patchSize, patch);
+			patch.convertTo(patch, CV_8U);
+
+			//printf("nchannels=%d\n", patch.channels());
+			//imshow("...", patch);
+			//waitKey(0);
 
 			if(prefix)
 			{
 				char buffer[1024];
 				sprintf(buffer, "%s%d.png", prefix, i);
 				imwrite(buffer, patch);
-
-				//printf("nchannels=%d\n", patch.channels());
-				//imshow("...", patch);
-				//waitKey(0);
 			}
 
-			patch.convertTo(patch, CV_32F);
-			patch = patch/255.0f;
-
 			//
-			d = descriptors.ptr<float>(i);
+			d = descriptors.ptr<uint8_t>(i);
 
 			if(!usecolor)
 			{
@@ -68,7 +68,7 @@ public:
 				//
 				for(r=0; r<patchSize; ++r)
 					for(c=0; c<patchSize; ++c)
-						d[r*patchSize+c] = patch.at<float>(r, c);
+						d[r*patchSize+c] = patch.at<uint8_t>(r, c);
 			}
 			else
 			{
@@ -79,7 +79,7 @@ public:
 				for(chn=0; chn<3; ++chn)
 					for(r=0; r<patchSize; ++r)
 						for(c=0; c<patchSize; ++c)
-							d[chn*patchSize*patchSize + r*patchSize + c] = patch.at<Vec3f>(r, c)[chn];
+							d[chn*patchSize*patchSize + r*patchSize + c] = patch.at<Vec3b>(r, c)[chn];
 			}
 
 			//
@@ -94,7 +94,7 @@ public:
 		else
 			return side*side;
 	}
-	virtual int descriptorType() const {return CV_32FC1;}
+	virtual int descriptorType() const {return CV_8U;}
 	virtual void computeImpl(const Mat&  image, std::vector<KeyPoint>& keypoints, Mat& descriptors) const
 	{
 		compute(image, keypoints, descriptors);
@@ -214,12 +214,12 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	fwrite("fPAT", 1, 4, file); // magic
+	fwrite("Bpch", 1, 4, file); // magic
 	fwrite(&dim, sizeof(int), 1, file);
 	fwrite(&descriptors.rows, sizeof(int), 1, file);
 
 	for(i=0; i<descriptors.rows; ++i)
-		fwrite(descriptors.ptr<float>(i), sizeof(float), dim, file);
+		fwrite(descriptors.ptr<uint8_t>(i), sizeof(uint8_t), dim, file);
 
 	//
 	return 0;
