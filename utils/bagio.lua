@@ -7,6 +7,9 @@ require 'struct'
 require 'image'
 
 --
+-- Load/store bags of keypoints
+--
+
 function load_bag(path)
 	--
 	local file = io.open(path, "rb")

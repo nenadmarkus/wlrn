@@ -25,8 +25,8 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 @techreport
 {
 	wlrn,
-	author = {Nenad Marku\v{s}},
-	title = {{Learning Local Descriptors from Weakly-Labeled Data}},
+	author = {Nenad Marku\v{s} and Igor S. Pand\v{z}i\'c and J\"{o}rgen Ahlberg},
+	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion}},
 	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
 	address = {Unska 3, 10000 Zagreb, Croatia},
 	year = {2016},
@@ -37,7 +37,7 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 ## Some results (to be updated soon)
 
 A network trained with our method (code in this repo) can be obtained from the folder `models/`.
-This network extracts `64f` descriptors of unit length from local grayscale patches of size `32x32`.
+This network extracts `64f` descriptors of unit length from local patches of size `32x32`.
 Here is its structure:
 
 ```
@@ -62,15 +62,15 @@ The net parameters are stored as a vector of floats at `models/32x32_to_64.param
 This is to reduce the storage requirements (i.e., the repo size).
 Use the following code to deploy and use the net.
 
-```Lua
+```lua
 -- load the network parameters first
 params = torch.load('models/32x32_to_64.params')
 
 -- create the network and initialize its weights with loaded data
 n = dofile('models/32x32_to_64.lua')(params):float()
 
--- generate a random batch of five 32x32 patches (each pixel is a float from [0, 1])
-p = torch.rand(5, 32, 32):float()
+-- generate a random batch of five 32x32 patches (each pixel is a float from [0, 255])
+p = torch.rand(5, 32, 32):float():mul(255)
 
 -- propagate the batch through the net to obtain descriptors
 -- (note that no patch prepocessing is required (such as mean substraction))
@@ -97,17 +97,34 @@ Move to the folder `utils/` and compile `fast.cpp` and `extp.cpp` with the provi
 These are the keypoint detection and patch extraction programs.
 Use the script `batch_extract.sh` to transform the downloaded images into bags of keypoints:
 ```
-bash batch_extract.sh ukb-trn/ ukb-trn-bags/
-bash batch_extract.sh ukb-val/ ukb-val-bags/
+bash batch_extract.sh ukb-trn/ ukb-trn-bags/ 128 32
+bash batch_extract.sh ukb-val/ ukb-val-bags/ 128 32
 ```
 
-To complete the data preparation procedure, use `bagio.lua` to store the generated bags in Torch7 format:
-```
-th -e 'require("bagio"); bags=load_bags("ukb-trn-bags/"); torch.save("ukb-trn.t7", bags)'
-th -e 'require("bagio"); bags=load_bags("ukb-val-bags/"); torch.save("ukb-val.t7", bags)'
+Extracted patches should now be found in `ukb-trn-bags/` and `ukb-val-bags/`.
+As these are stored in the JPG format, you can inspect them with your favorite image viewer.
+
+### 2. Prepare data-loading scripts
+
+To keep a desirable level of abstraction and enable large-scale learning, this code requires the user to provide his/her routines for generating triplets.
+An example can be found at `utils/tripletgen.lua`.
+The strings "--FOLDER--", "--NCHANNELS--" and "--PROBABILITY--" need to be replaced with appropriate ones, depending whether loading training or validation data.
+The following shell commands will do this for you.
+```bash
+cp utils/tripletgen.lua trn-tripletgen.lua
+sed -i -e 's/--FOLDER--/"ukb-trn-bags"/g' trn-tripletgen.lua
+sed -i -e 's/--NCHANNELS--/1/g' trn-tripletgen.lua
+sed -i -e 's/--PROBABILITY--/0.33/g' trn-tripletgen.lua
+
+cp utils/tripletgen.lua val-tripletgen.lua
+sed -i -e 's/--FOLDER--/"ukb-val-bags"/g' val-tripletgen.lua
+sed -i -e 's/--NCHANNELS--/1/g' val-tripletgen.lua
+sed -i -e 's/--PROBABILITY--/1.0/g' val-tripletgen.lua
 ```
 
-#### 2. Specify the descriptor extractor structure
+After executing them, you should find two Lua files, `trn-tripletgen.lua` and `val-tripletgen.lua`, next to `wlrn.lua`.
+
+#### 3. Specify the descriptor-extractor structure
 
 The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
 See the default model in `models/32x32_to_64.lua` for an example.
@@ -115,16 +132,16 @@ See the default model in `models/32x32_to_64.lua` for an example.
 Of course, you can try different architectures.
 However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking (such as learning rates).
 
-#### 3. Start the learning script
+#### 4. Start the learning script
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua models/32x32_to_64.lua ukb-trn.t7 -v ukb-val.t7 -w params.t7
+	th wlrn.lua models/32x32_to_64.lua trn-tripletgen.lua -v val-tripletgen.lua -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
 The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/32x32_to_64.lua`.
 Use the following code to deploy them:
-```Lua
+```lua
 n = dofile('models/32x32_to_64.lua')():float()
 p = n:getParameters()
 p:copy(torch.load('params.t7'))

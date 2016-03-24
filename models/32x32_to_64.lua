@@ -10,7 +10,8 @@ function get_32x32_to_64(p)
 	local encoder = nn.Sequential()
 
 	--
-	encoder:add( nn.View(1, 32, 32) )
+	encoder:add( nn.MulConstant(1.0/255.0) )
+	encoder:add( nn.View(1, 32, 32) )	
 
 	--
 	encoder:add(nn.SpatialConvolution(1, 32, 3, 3))

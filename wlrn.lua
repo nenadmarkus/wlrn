@@ -12,9 +12,9 @@ cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
 cmd:argument("-e", "path to the Lua script which specifies the descriptor extractor structure")
-cmd:argument("-t", "training data")
+cmd:argument("-t", "training data loader script")
 cmd:text("Options")
-cmd:option("-v", "", "validation data")
+cmd:option("-v", "", "validation data loader script")
 cmd:option("-r", "", "read weights in Torch7 format")
 cmd:option("-w", "", "write weights in Torch7 format")
 cmd:option("-n", "", "number of training rounds")
@@ -160,70 +160,6 @@ end
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
-function generate_triplets(bags, n)
-	--
-	local i, j
-
-	--
-	if not n then
-		--
-		n = #bags
-	else
-		n = math.min(n, #bags)
-	end
-
-	-- select a random subset of bags
-	local p = torch.randperm(#bags)
-	local subset = {}
-
-	for i=1, n do
-		--
-		local bag = {}
-
-		bag.magic = bags[ p[i] ].magic
-		bag.label = bags[ p[i] ].label
-		bag.filename = bags[ p[i] ].filename
-
-		--
-		bag.data = bags[ p[i] ].data
-
-		--
-		subset[1+#subset] = bag
-	end
-
-	--
-	local triplets = {}
-
-	for i=1, #subset do
-		for j=i+1, #subset do
-			if subset[i].label == subset[j].label then
-				for k=1, 3 do -- generate 3 triplets for each matching pair
-					--
-					local stop = false
-					local q
-
-					while not stop do
-						--
-						q = math.random(1, #subset)
-
-						--
-						if subset[i].label ~= subset[q].label then
-							--
-							stop = true
-						end
-					end
-
-					--
-					table.insert(triplets, {subset[i].data, subset[j].data, subset[q].data})
-				end
-			end
-		end
-	end
-
-	--
-	return triplets
-end
-
 function apply_optim_sgd_step(triplets, batch, eta)
 	--
 	local feval = function(x)
@@ -316,20 +252,14 @@ end
 print('* thr = ' .. thr)
 
 --
-time = sys.clock()
-tbags = torch.load(params.t)
-time = sys.clock() - time
-print('* training dataset loaded from "' .. params.t .. '" in ' .. time .. ' [s]')
+get_trn_triplets = dofile(params.t)
 
 if params.v ~= "" then
 	--
-	time = sys.clock()
-	vbags = torch.load(params.v)
-	time = sys.clock() - time
-	print('* validation dataset loaded from "' .. params.v .. '" in ' .. time .. ' [s]')
+	get_vld_triplets = dofile(params.v)
 else
 	--
-	vbags = tbags
+	get_vld_triplets = get_trn_triplets
 end
 
 --
@@ -347,14 +277,14 @@ end
 
 --
 time = sys.clock()
-vtriplets = generate_triplets(vbags)
+vtriplets = get_vld_triplets()
 time = sys.clock() - time
-print('* ' .. #vtriplets .. ' triplets generated in ' .. time .. ' [s]')
+print('* ' .. #vtriplets .. ' validation triplets generated in ' .. time .. ' [s]')
 
 time = sys.clock()
 ebest = compute_average_loss(vtriplets)
 elast = ebest
-print('* initial score: ' .. ebest)
+print('* initial validation loss: ' .. ebest)
 
 time = sys.clock() - time
 print("    ** elapsed time: " .. time .. " [s]")
@@ -370,7 +300,7 @@ for i = 1, nrounds do
 
 	--
 	time = sys.clock()
-	ttriplets = generate_triplets(tbags, #tbags/3)
+	ttriplets = get_trn_triplets()
 	time = sys.clock() - time
 	print('    ** ' .. #ttriplets .. ' triplets generated in ' .. time .. ' [s]')
 
@@ -424,4 +354,3 @@ for i = 1, nrounds do
 
 	--
 end
---

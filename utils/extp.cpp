@@ -137,14 +137,14 @@ int main(int argc, char* argv[])
 	char* magic;
 
 	//
-	if(argc<2)
+	if(argc<4)
 	{
 		//
 		printf("* command line arguments:\n");
-		printf("\t** image path (required)\n");
+		printf("\t** image path\n");
 		printf("\t** patch size (in pixels)\n");
 		printf("\t** keypoint size multiplier\n");
-		printf("\t** output file (if none provided, the programs writes to stdout)\n");
+		printf("\t** optional: output file (if none provided, the programs writes to stdout)\n");
 
 		//
 		return 0;
@@ -182,11 +182,10 @@ int main(int argc, char* argv[])
 	int npix=32;
 	float size=1.5f;
 
-	if(argc>=3)
-		sscanf(argv[2], "%d", &npix);
-	if(argc>=4)
-		sscanf(argv[3], "%f", &size);
+	sscanf(argv[2], "%d", &npix);
+	sscanf(argv[3], "%f", &size);
 
+	//
 	cv::Mat descriptors;
 	PatchExt::PatchExtractor patchExtractor(npix, size);
 
@@ -200,26 +199,63 @@ int main(int argc, char* argv[])
 	dim = patchExtractor.descriptorSize();
 
 	//
-	FILE* file = stdout;
-
 	if(argc==5)
 	{
-		//
-		file = fopen(argv[4], "wb");
-
-		if(!file)
+		if(!USECOLOR)
 		{
-			printf("* cannot write to '%s'\n", argv[4]);
-			return 0;
+			int i, r, c;
+
+			cv::Mat img(descriptors.rows*npix, npix, CV_8UC1);
+
+			for(i=0; i<descriptors.rows; ++i)
+				for(r=0; r<npix; ++r)
+					for(c=0; c<npix; ++c)
+						img.at<uint8_t>(i*npix+r, c) = descriptors.at<uint8_t>(i, r*npix + c);
+
+			cv::imwrite(argv[4], img);
+		}
+		else
+		{
+			int i, r, c;
+
+			cv::Mat img(descriptors.rows*npix, npix, CV_8UC3);
+
+			for(i=0; i<descriptors.rows; ++i)
+			{
+				//
+				uint8_t* d = descriptors.ptr<uint8_t>(i);
+
+				//
+				for(r=0; r<npix; ++r)
+					for(c=0; c<npix; ++c)
+					{
+						img.at<cv::Vec3b>(i*npix+r, c)[0] = d[0*npix*npix + r*npix + c];
+						img.at<cv::Vec3b>(i*npix+r, c)[1] = d[1*npix*npix + r*npix + c];
+						img.at<cv::Vec3b>(i*npix+r, c)[2] = d[2*npix*npix + r*npix + c];
+					}
+			}
+
+			//
+
+			std::vector<int> compression_params;
+			compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+			compression_params.push_back(9);
+
+			cv::imwrite(argv[4], img, compression_params);
 		}
 	}
+	else
+	{
+		//
+		FILE* file = stdout;
 
-	fwrite("Bpch", 1, 4, file); // magic
-	fwrite(&dim, sizeof(int), 1, file);
-	fwrite(&descriptors.rows, sizeof(int), 1, file);
+		fwrite("Bpch", 1, 4, file); // magic
+		fwrite(&dim, sizeof(int), 1, file);
+		fwrite(&descriptors.rows, sizeof(int), 1, file);
 
-	for(i=0; i<descriptors.rows; ++i)
-		fwrite(descriptors.ptr<uint8_t>(i), sizeof(uint8_t), dim, file);
+		for(i=0; i<descriptors.rows; ++i)
+			fwrite(descriptors.ptr<uint8_t>(i), sizeof(uint8_t), dim, file);
+	}
 
 	//
 	return 0;
