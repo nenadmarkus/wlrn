@@ -42,35 +42,39 @@ Here is its structure:
 
 ```
 nn.Sequential {
-  [input -> (1) -> (2) -> (3) -> (4) -> (5) -> (6) -> (7) -> (8) -> (9) -> (10) -> (11) -> output]
-  (1): nn.View
-  (2): nn.SpatialConvolution(1 -> 32, 3x3)
-  (3): nn.ReLU
-  (4): nn.SpatialConvolution(32 -> 64, 4x4, 2,2)
-  (5): nn.ReLU
-  (6): nn.SpatialConvolution(64 -> 128, 3x3)
-  (7): nn.SpatialMaxPooling(2,2,2,2)
-  (8): nn.SpatialConvolution(128 -> 32, 1x1)
-  (9): nn.View
-  (10): nn.Linear(1152 -> 64)
-  (11): nn.Normalize(2)
+  [input -> (1) -> (2) -> (3) -> (4) -> (5) -> output]
+  (1): nn.MulConstant
+  (2): nn.View
+  (3): nn.Sequential {
+    [input -> (1) -> (2) -> (3) -> (4) -> (5) -> (6) -> (7) -> (8) -> output]
+    (1): nn.SpatialConvolution(3 -> 32, 3x3)
+    (2): nn.ReLU
+    (3): nn.SpatialConvolution(32 -> 64, 4x4, 2,2)
+    (4): nn.ReLU
+    (5): nn.SpatialConvolution(64 -> 128, 3x3)
+    (6): nn.SpatialMaxPooling(2,2,2,2)
+    (7): nn.SpatialConvolution(128 -> 32, 1x1)
+    (8): nn.SpatialConvolution(32 -> 64, 6x6)
+  }
+  (4): nn.View
+  (5): nn.Normalize(2)
 }
 ```
 
-The structure is specified in `models/32x32_to_64.lua`.
-The net parameters are stored as a vector of floats at `models/32x32_to_64.params`.
+The structure is specified in `models/3x32x32_to_64.lua`.
+The net parameters are stored as a vector of floats at `models/3x32x32_to_64.params`.
 This is to reduce the storage requirements (i.e., the repo size).
 Use the following code to deploy and use the net.
 
 ```lua
 -- load the network parameters first
-params = torch.load('models/32x32_to_64.params')
+params = torch.load('models/3x32x32_to_64.params')
 
 -- create the network and initialize its weights with loaded data
-n = dofile('models/32x32_to_64.lua')(params):float()
+n = dofile('models/3x32x32_to_64.lua')(params):float()
 
 -- generate a random batch of five 32x32 patches (each pixel is a float from [0, 255])
-p = torch.rand(5, 32, 32):float():mul(255)
+p = torch.rand(5, 3, 32, 32):float():mul(255)
 
 -- propagate the batch through the net to obtain descriptors
 -- (note that no patch prepocessing is required (such as mean substraction))
@@ -101,7 +105,7 @@ bash batch_extract.sh ukb-trn/ ukb-trn-bags/ 128 32
 bash batch_extract.sh ukb-val/ ukb-val-bags/ 128 32
 ```
 
-Extracted patches should now be found in `ukb-trn-bags/` and `ukb-val-bags/`.
+Extracted patches should now be in `ukb-trn-bags/` and `ukb-val-bags/`.
 As these are stored in the JPG format, you can inspect them with your favorite image viewer.
 
 ### 2. Prepare data-loading scripts
@@ -109,16 +113,16 @@ As these are stored in the JPG format, you can inspect them with your favorite i
 To keep a desirable level of abstraction and enable large-scale learning, this code requires the user to provide his/her routines for generating triplets.
 An example can be found at `utils/tripletgen.lua`.
 The strings "--FOLDER--", "--NCHANNELS--" and "--PROBABILITY--" need to be replaced with appropriate ones, depending whether loading training or validation data.
-The following shell commands will do this for you.
+The following shell commands will do this for you (replace each slash in the folder paths with backslash+slash as required by `sed`).
 ```bash
 cp utils/tripletgen.lua trn-tripletgen.lua
 sed -i -e 's/--FOLDER--/"ukb-trn-bags"/g' trn-tripletgen.lua
-sed -i -e 's/--NCHANNELS--/1/g' trn-tripletgen.lua
+sed -i -e 's/--NCHANNELS--/3/g' trn-tripletgen.lua
 sed -i -e 's/--PROBABILITY--/0.33/g' trn-tripletgen.lua
 
 cp utils/tripletgen.lua val-tripletgen.lua
 sed -i -e 's/--FOLDER--/"ukb-val-bags"/g' val-tripletgen.lua
-sed -i -e 's/--NCHANNELS--/1/g' val-tripletgen.lua
+sed -i -e 's/--NCHANNELS--/3/g' val-tripletgen.lua
 sed -i -e 's/--PROBABILITY--/1.0/g' val-tripletgen.lua
 ```
 
@@ -127,7 +131,7 @@ After executing them, you should find two Lua files, `trn-tripletgen.lua` and `v
 #### 3. Specify the descriptor-extractor structure
 
 The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
-See the default model in `models/32x32_to_64.lua` for an example.
+See the default model in `models/3x32x32_to_64.lua` for an example.
 
 Of course, you can try different architectures.
 However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking (such as learning rates).
@@ -136,13 +140,13 @@ However, to learn their parameters, some parts of `wlrn.lua` might need addition
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua models/32x32_to_64.lua trn-tripletgen.lua -v val-tripletgen.lua -w params.t7
+	th wlrn.lua models/3x32x32_to_64.lua trn-tripletgen.lua -v val-tripletgen.lua -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
-The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/32x32_to_64.lua`.
+The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/3x32x32_to_64.lua`.
 Use the following code to deploy them:
 ```lua
-n = dofile('models/32x32_to_64.lua')():float()
+n = dofile('models/3x32x32_to_64.lua')():float()
 p = n:getParameters()
 p:copy(torch.load('params.t7'))
 torch.save('net.t7', n)

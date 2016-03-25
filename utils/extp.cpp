@@ -8,7 +8,7 @@
 	
 */
 
-#define USECOLOR 0
+#define USECOLOR 1
 
 namespace PatchExt
 {
