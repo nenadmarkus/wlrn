@@ -100,7 +100,7 @@ Images from the first folder will be used for training and images from the secon
 Move to the folder `utils/` and compile `fast.cpp` and `extp.cpp` with the provided `makefile`.
 These are the keypoint detection and patch extraction programs.
 Use the script `batch_extract.sh` to transform the downloaded images into bags of keypoints:
-```
+```bash
 bash batch_extract.sh ukb-trn/ ukb-trn-bags/ 128 32
 bash batch_extract.sh ukb-val/ ukb-val-bags/ 128 32
 ```
