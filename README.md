@@ -16,9 +16,6 @@ We propose to *learn local descriptors* by optimizing the mentioned local corres
 Note that prior work assumes local correspondences are known in advance.
 
 The details of the method can be found in our technical report (available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf)):
-
-> N. Markus, "Learning Local Descriptors from Weakly-Labeled Data", <https://github.com/nenadmarkus/wlrn>, February 2016
-
 If you use our results and/or ideas, please cite the report as (BibTeX)
 
 ```
