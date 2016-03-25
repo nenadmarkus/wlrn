@@ -15,7 +15,7 @@ On average, matching pairs should contain more corresponding local visual words 
 We propose to *learn local descriptors* by optimizing the mentioned local correspondence criterion on a given dataset.
 Note that prior work assumes local correspondences are known in advance.
 
-The details of the method can be found in our technical report (available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf)):
+The details of the method can be found in our technical report (available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf)).
 If you use our results and/or ideas, please cite the report as (BibTeX)
 
 ```
