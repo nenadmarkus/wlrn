@@ -22,7 +22,7 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 @techreport
 {
 	wlrn,
-	author = {Nenad Marku\v{s}},
+	author = {Nenad Marku\v{s} and Igor S. Pand\v{z}i\'c and J\"{o}rgen Ahlberg},
 	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion}},
 	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
 	address = {Unska 3, 10000 Zagreb, Croatia},

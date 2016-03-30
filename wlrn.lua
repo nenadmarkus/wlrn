@@ -63,7 +63,7 @@ T:add(C)
 -- cuda
 T = T:cuda()
 
--- if you don't have cuDNN installed, please comment out the following four line (beware: cunn is *significantly* slower than cuDNN)
+-- if you don't have cuDNN installed, please comment out the following four lines (beware: cunn is *significantly* slower than cuDNN)
 require 'cudnn'
 cudnn.benchmark = true
 cudnn.fastest = true
