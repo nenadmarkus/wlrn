@@ -80,7 +80,7 @@ return function()
 	local p = io.popen('ls ' .. folder .. '/*.jpg')
 	for path in p:lines() do
 		--
-		-- discard bag with probability `prob`
+		-- discard bag with probability (1-prob)
 		if math.random()<=prob then
 			--
 			-- extract bag label from filename

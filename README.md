@@ -15,19 +15,17 @@ On average, matching pairs should contain more corresponding local visual words 
 We propose to *learn local descriptors* by optimizing the mentioned local correspondence criterion on a given dataset.
 Note that prior work assumes local correspondences are known in advance.
 
-The details of the method can be found in our technical report (available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf)).
+The details of the method can be found in our technical report available on [arXiv](http://arxiv.org/abs/1603.09095).
 If you use our results and/or ideas, please cite the report as (BibTeX)
 
 ```
-@techreport
+@misc
 {
 	wlrn,
 	author = {Nenad Marku\v{s} and Igor S. Pand\v{z}i\'c and J\"{o}rgen Ahlberg},
 	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion}},
-	institution  = {University of Zagreb, Faculty of Electrical Engineering and Computing},
-	address = {Unska 3, 10000 Zagreb, Croatia},
 	year = {2016},
-	note = {\url{https://github.com/nenadmarkus/wlrn}}
+	eprint = {arXiv:1603.09095}
 }
 ```
 
@@ -83,6 +81,8 @@ print(d[1]*d[2])
 -- ... or you can use the Euclidean distance
 print(torch.norm(d[1] - d[2]))
 ```
+
+Notice that although it was trained on `32x32` patches, the model can be applied in a fully-convolutional manner to images of any size (the third module of the architecture contains only convolutions, ReLUs and pooling operations).
 
 ## How to repeat the training
 

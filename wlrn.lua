@@ -67,7 +67,7 @@ T = T:cuda()
 require 'cudnn'
 cudnn.benchmark = true
 cudnn.fastest = true
-cudnn.convert(T, cudnn)
+T = cudnn.convert(T, cudnn)
 
 --
 pT, gT = T:getParameters()

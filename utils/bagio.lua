@@ -110,12 +110,18 @@ function store_bag(bag, path)
 	file:write(struct.pack("c4ii", bag.magic, descsize, n))
 
 	--
+	typ = string.sub(bag.magic, 1, 1)
+
 	for i=1, n do
 		--
 		local tbl = bag.data[i]:totable()
 
 		--
-		file:write(struct.pack(string.rep("f", descsize), unpack(tbl)))
+		if typ=='f' then
+			file:write(struct.pack(string.rep('f', descsize), unpack(tbl)))
+		else
+			file:write(struct.pack(string.rep('B', descsize), unpack(tbl)))
+		end
 	end
 
 	--
