@@ -1,0 +1,121 @@
+\begin{figure}[t]
+	%\centering
+	\resizebox{1.0\columnwidth}{!}
+	{
+		\begin{tikzpicture}
+			% grid
+			%\draw[dashed, black, line width=0.1, xshift=1, yshift=1] (0, 0) grid (16, 16);
+
+			% original images
+			\node[draw, inner sep=0, line width=8] at (3, 14)
+				{\includegraphics[scale=0.125]{kset1.jpg}};
+			\node[draw, inner sep=0, line width=8] at (8, 14)
+				{\includegraphics[scale=0.125]{kljuc.jpg}};
+			\node[draw, inner sep=0, line width=8] at (13, 14)
+				{\includegraphics[scale=0.125]{kset2.jpg}};
+
+			%
+			\draw[->, line width=4]
+				(3, 12) -- (3, 11);
+			\draw[->, line width=4]
+				(8, 12) -- (8, 11);
+			\draw[->, line width=4]
+				(13, 12) -- (13, 11);
+
+			% keypoints
+			\node[draw, inner sep=0, line width=8] at (3, 9)
+				{\includegraphics[scale=0.125]{kset1-d.jpg}};
+			\node[draw, inner sep=0, line width=8] at (8, 9)
+				{\includegraphics[scale=0.125]{kljuc-d.jpg}};
+			\node[draw, inner sep=0, line width=8] at (13, 9)
+				{\includegraphics[scale=0.125]{kset2-d.jpg}};
+
+			%
+			\draw[->, line width=4]
+				(3, 7) -- (3, 6);
+			\draw[->, line width=4]
+				(8, 7) -- (8, 6);
+			\draw[->, line width=4]
+				(13, 7) -- (13, 6);
+
+			% bags
+			\draw (3, 3) circle (2.25);
+			\node[draw, inner sep=0, line width=4] at (4.0, 4.0)
+				{\includegraphics[scale=0.5]{p1-0.png}};
+			\node[draw, inner sep=0, line width=4] at (2.0, 2.0)
+				{\includegraphics[scale=0.5]{p1-1.png}};
+			\node[draw, inner sep=0, line width=4] at (4.0, 2.0)
+				{\includegraphics[scale=0.5]{p1-2.png}};
+			\node[draw, inner sep=0, line width=4] at (2.0, 4.0)
+				{\includegraphics[scale=0.5]{p1-3.png}};
+			\node[draw, inner sep=0, line width=4] at (3.0, 4.5)
+				{\includegraphics[scale=0.5]{p1-4.png}};
+			\node[draw, inner sep=0, line width=4] at (3.0, 1.5)
+				{\includegraphics[scale=0.5]{p1-5.png}};
+			\node[draw, inner sep=0, line width=4] at (4.5, 3.0)
+				{\includegraphics[scale=0.5]{p1-6.png}};
+			\node[draw, inner sep=0, line width=4] at (1.5, 3.0)
+				{\includegraphics[scale=0.5]{p1-7.png}};
+			\node[draw, inner sep=0, line width=4] at (3.0, 3.0)
+				{\includegraphics[scale=0.5]{p1-8.png}};
+
+			\draw (8, 3) circle (2.25);
+			\node[draw, inner sep=0, line width=4] at (9.0, 4.0)
+				{\includegraphics[scale=0.5]{p2-0.png}};
+			\node[draw, inner sep=0, line width=4] at (7.0, 2.0)
+				{\includegraphics[scale=0.5]{p2-1.png}};
+			\node[draw, inner sep=0, line width=4] at (9.0, 2.0)
+				{\includegraphics[scale=0.5]{p2-2.png}};
+			\node[draw, inner sep=0, line width=4] at (7.0, 4.0)
+				{\includegraphics[scale=0.5]{p2-3.png}};
+			\node[draw, inner sep=0, line width=4] at (8.0, 4.5)
+				{\includegraphics[scale=0.5]{p2-4.png}};
+			\node[draw, inner sep=0, line width=4] at (8.0, 1.5)
+				{\includegraphics[scale=0.5]{p2-5.png}};
+			\node[draw, inner sep=0, line width=4] at (9.5, 3.0)
+				{\includegraphics[scale=0.5]{p2-6.png}};
+			\node[draw, inner sep=0, line width=4] at (6.5, 3.0)
+				{\includegraphics[scale=0.5]{p2-7.png}};
+			\node[draw, inner sep=0, line width=4] at (8.0, 3.0)
+				{\includegraphics[scale=0.5]{p2-8.png}};
+
+			\draw (13, 3) circle (2.25);
+			\node[draw, inner sep=0, line width=4] at (14.0, 4.0)
+				{\includegraphics[scale=0.5]{p3-0.png}};
+			\node[draw, inner sep=0, line width=4] at (12.0, 2.0)
+				{\includegraphics[scale=0.5]{p3-1.png}};
+			\node[draw, inner sep=0, line width=4] at (14.0, 2.0)
+				{\includegraphics[scale=0.5]{p3-2.png}};
+			\node[draw, inner sep=0, line width=4] at (12.0, 4.0)
+				{\includegraphics[scale=0.5]{p3-3.png}};
+			\node[draw, inner sep=0, line width=4] at (13.0, 4.5)
+				{\includegraphics[scale=0.5]{p3-4.png}};
+			\node[draw, inner sep=0, line width=4] at (13.0, 1.5)
+				{\includegraphics[scale=0.5]{p3-5.png}};
+			\node[draw, inner sep=0, line width=4] at (14.5, 3.0)
+				{\includegraphics[scale=0.5]{p3-6.png}};
+			\node[draw, inner sep=0, line width=4] at (11.5, 3.0)
+				{\includegraphics[scale=0.5]{p3-7.png}};
+			\node[draw, inner sep=0, line width=4] at (13.0, 3.0)
+				{\includegraphics[scale=0.5]{p3-8.png}};
+
+			% colored arrows
+			\draw[<->, line width=4, red]
+				(4, 5) to [out=45, in=135] (7, 5);
+			\draw[<->, line width=4, red]
+				(9, 5) to [out=45, in=135] (12, 5);
+			\draw[<->, line width=4, green]
+				(4, 1) to [out=330, in=210] (12, 1);
+
+		\end{tikzpicture}
+	}
+	\caption
+	{
+		Each image in the dataset (first row) is processed with a keypoint detector (second row) and transformed into a bag of visual words (third row).
+		Some bags form matching pairs (green arrow, \mygreenarrow) and some form non-matching pairs (red arrows, \myredarrow).
+		On average, matching pairs should contain more corresponding local visual words than non-matching pairs.
+		We propose to \textit{learn local descriptors} by optimizing the mentioned local correspondence criterion on a given dataset. %, i.e., without knowing detailed correspondences between local visual words as assumed in prior work \cite{winder}.
+		Note that most prior work assumes local correspondences are known in advance (e.g., \cite{winder,zagoruyko,matchnet,convdesc,pnnet}).
+	}
+	\label{fig:teaser}
+\end{figure}

@@ -1,0 +1,89 @@
+\begin{table*}[htb]
+	\begin{subtable}[t]{2\columnwidth}
+		\centering
+		%\resizebox{2\columnwidth}{!}
+		{
+			\begin{tabular}{|c|c||c|c|c||c|c|c||c|c|c|}
+				\hline
+					\multirow{2}{*}{Descriptor} & \multirow{2}{*}{Size} & \multicolumn{3}{|c|}{UKB-test}	&	\multicolumn{3}{|c|}{ZuBuD}	&	\multicolumn{3}{|c|}{INRIA Holidays} \\
+					\cline{3-11}
+					&	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	\\
+				\hline
+				\hline
+				FAST, $32\times32\rightarrow64$	&	$64$f	&	\color{red}$95.8$	&	\color{darkgreen}$\bm{85.6}$	&	\color{blue}$\bm{90.6}$	&	\color{red}$\bm{96.5}$	&	\color{darkgreen}$\bm{81.1}$	&	\color{blue}$\bm{86.5}$	&	\color{red}$\bm{56.1}$	&	\color{darkgreen}$\bm{40.9}$	&	\color{blue}$\bm{47.9}$	\\
+				\hline
+				DoG+FAST, $32\times32\rightarrow64$	&	$64$f	&	\color{red}$\bm{96.0}$	&	\color{darkgreen}$84.7$	&	\color{blue}$89.4$	&	\color{red}$95.9$	&	\color{darkgreen}$80.3$	&	\color{blue}$85.0$	&	\color{red}$56.0$	&	\color{darkgreen}$40.4$	&	\color{blue}$46.3$	\\
+				\hline
+				\hline
+				DeepCompare\cite{zagoruyko}+PCA$_{512\rightarrow64}$	&	$64$f	&	\color{red}$93.5$	&	\color{darkgreen}$78.8$	&	\color{blue}$85.6$	&	\color{red}$96.8$	&	\color{darkgreen}$77.7$	&	\color{blue}$82.8$	&	\color{red}$52.7$	&	\color{darkgreen}$34.6$	&	\color{blue}$39.8$	\\
+				\hline
+				MatchNet\cite{matchnet}+PCA$_{4096\rightarrow64}$	&	$64$f	&	\color{red}$80.2$	&	\color{darkgreen}$60.4$	&	\color{blue}$69.3$	&	\color{red}$94.0$	&	\color{darkgreen}$72.9$	&	\color{blue}$78.5$	&	\color{red}$46.3$	&	\color{darkgreen}$32.3$	&	\color{blue}$38.3$	\\
+				\hline
+				DeepDesc \cite{convdesc}	&	$128$f	&	\color{red}$93.8$	&	\color{darkgreen}$79.7$	&	\color{blue}$86.3$	&	\color{red}$96.0$	&	\color{darkgreen}$76.1$	&	\color{blue}$81.1$	&	\color{red}$54.7$	&	\color{darkgreen}$38.1$	&	\color{blue}$43.7$	\\	% tau=2
+				\hline
+				PN-Net \cite{pnnet}	&	$128$f	&	\color{red}$91.7$	&	\color{darkgreen}$74.4$	&	\color{blue}$81.9$	&	\color{red}$94.7$	&	\color{darkgreen}$75.5$	&	\color{blue}$81.2$	&	\color{red}$52.0$	&	\color{darkgreen}$35.9$	&	\color{blue}$41.0$	\\
+				\hline
+				\hline
+				SIFT+PCA$_{128\rightarrow64}$	&	$64$f	&	\color{red}$74.2$	&	\color{darkgreen}$52.1$	&	\color{blue}$58.0$	&	\color{red}$94.4$	&	\color{darkgreen}$71.8$	&	\color{blue}$76.7$	&	\color{red}$43.9$	&	\color{darkgreen}$26.8$	&	\color{blue}$30.0$	\\
+				\hline
+				RFD-R \cite{rfd}	&	$320$b	&	\color{red}$74.1$	&	\color{darkgreen}$53.3$	&	\color{blue}$62.3$	&	\color{red}$93.9$	&	\color{darkgreen}$72.2$	&	\color{blue}$77.8$	&	\color{red}$43.3$	&	\color{darkgreen}$26.0$	&	\color{blue}$30.2$	\\
+				\hline
+				RFD-G \cite{rfd}	&	$448$b	&	\color{red}$80.3$	&	\color{darkgreen}$58.8$	&	\color{blue}$67.0$	&	\color{red}$94.9$	&	\color{darkgreen}$73.9$	&	\color{blue}$79.0$	&	\color{red}$45.1$	&	\color{darkgreen}$28.0$	&	\color{blue}$32.6$	\\
+				\hline
+				LDB	\cite{ldb}	&	$256$b	&	\color{red}$61.4$	&	\color{darkgreen}$41.2$	&	\color{blue}$46.7$	&	\color{red}$83.0$	&	\color{darkgreen}$54.8$	&	\color{blue}$59.2$	&	\color{red}$42.0$	&	\color{darkgreen}$24.8$	&	\color{blue}$28.1$	\\
+				\hline
+			\end{tabular}
+		}
+		\caption
+		{
+			Each image was represented with $75$ FAST keypoints.
+		}
+		\label{tbl:cmpfast}
+	\end{subtable}
+	\begin{subtable}[t]{2\columnwidth}
+		\centering
+		%\resizebox{2\columnwidth}{!}
+		{
+			\begin{tabular}{|c|c||c|c|c||c|c|c||c|c|c|}
+				\hline
+					\multirow{2}{*}{Descriptor} & \multirow{2}{*}{Size} & \multicolumn{3}{|c|}{UKB-test}	&	\multicolumn{3}{|c|}{ZuBuD}	&	\multicolumn{3}{|c|}{INRIA Holidays} \\
+					\cline{3-11}
+					&	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	&	\color{red}NN	&	\color{darkgreen}FT	& \color{blue}ST	\\
+				\hline
+				\hline
+				FAST, $32\times32\rightarrow64$	&	$64$f	&	\color{red}$75.1$	&	\color{darkgreen}$58.6$	&	\color{blue}$67.2$	&	\color{red}$92.7$	&	\color{darkgreen}$71.7$	&	\color{blue}$79.2$	&	\color{red}$46.9$	&	\color{darkgreen}$28.5$	&	\color{blue}$34.5$	\\
+				\hline
+				DoG+FAST, $32\times32\rightarrow64$	&	$64$f	&	\color{red}$\bm{83.4}$	&	\color{darkgreen}$\bm{68.4}$	&	\color{blue}$\bm{78.7}$	&	\color{red}$\bm{94.3}$	&	\color{darkgreen}$\bm{75.6}$	&	\color{blue}$\bm{82.4}$	&	\color{red}$\bm{51.1}$	&	\color{darkgreen}$34.3$	&	\color{blue}$40.2$	\\
+				\hline
+				\hline
+				DeepCompare\cite{zagoruyko}+PCA$_{512\rightarrow64}$	&	$64$f	&	\color{red}$72.3$	&	\color{darkgreen}$54.7$	&	\color{blue}$63.3$	&	\color{red}$92.0$	&	\color{darkgreen}$68.4$	&	\color{blue}$75.0$	&	\color{red}$50.6$	&	\color{darkgreen}$32.4$	&	\color{blue}$36.9$	\\
+				\hline
+				MatchNet\cite{matchnet}+PCA$_{4096\rightarrow64}$	&	$64$f	&	\color{red}$58.9$	&	\color{darkgreen}$40.9$	&	\color{blue}$49.7$	&	\color{red}$90.2$	&	\color{darkgreen}$64.9$	&	\color{blue}$70.4$	&	\color{red}$41.7$	&	\color{darkgreen}$25.4$	&	\color{blue}$28.9$	\\
+				\hline
+				DeepDesc \cite{convdesc}	&	$128$f	&	\color{red}$77.2$	&	\color{darkgreen}$61.0$	&	\color{blue}$70.4$	&	\color{red}$93.2$	&	\color{darkgreen}$70.3$	&	\color{blue}$77.2$	&	\color{red}$50.6$	&	\color{darkgreen}$\bm{35.5}$	&	\color{blue}$\bm{42.4}$	\\	% tau=2
+				\hline
+				PN-Net \cite{pnnet}	&	$128$f	&	\color{red}$71.5$	&	\color{darkgreen}$53.1$	&	\color{blue}$62.0$	&	\color{red}$92.0$	&	\color{darkgreen}$66.6$	&	\color{blue}$72.3$	&	\color{red}$50.1$	&	\color{darkgreen}$31.6$	&	\color{blue}$35.3$	\\
+				\hline
+				\hline
+				SIFT+PCA$_{128\rightarrow64}$	&	$64$f	&	\color{red}$40.9$	&	\color{darkgreen}$23.2$	&	\color{blue}$26.4$	&	\color{red}$78.1$	&	\color{darkgreen}$49.8$	&	\color{blue}$54.8$	&	\color{red}$29.8$	&	\color{darkgreen}$15.3$	&	\color{blue}$17.5$	\\
+				\hline
+				RFD-R \cite{rfd}	&	$320$b	&	\color{red}$44.8$	&	\color{darkgreen}$31.2$	&	\color{blue}$36.6$	&	\color{red}$79.5$	&	\color{darkgreen}$53.3$	&	\color{blue}$59.6$	&	\color{red}$43.1$	&	\color{darkgreen}$25.2$	&	\color{blue}$28.4$	\\
+				\hline
+				RFD-G \cite{rfd}	&	$448$b	&	\color{red}$53.1$	&	\color{darkgreen}$36.4$	&	\color{blue}$42.0$	&	\color{red}$85.7$	&	\color{darkgreen}$58.0$	&	\color{blue}$63.9$	&	\color{red}$45.3$	&	\color{darkgreen}$28.8$	&	\color{blue}$32.9$	\\
+				\hline
+				LDB	\cite{ldb}	&	$256$b	&	\color{red}$35.8$	&	\color{darkgreen}$21.9$	&	\color{blue}$26.3$	&	\color{red}$65.1$	&	\color{darkgreen}$38.0$	&	\color{blue}$42.7$	&	\color{red}$27.3$	&	\color{darkgreen}$15.0$	&	\color{blue}$18.5$	\\
+				\hline
+			\end{tabular}
+		}
+		\caption
+		{
+			Each image was represented with $75$ DoG keypoints.
+		}
+		\label{tbl:cmpdog}
+	\end{subtable}
+	\caption
+	{
+		Retrieval results for different descriptor extraction techniques.
+		First two rows of both tables are for our descriptors.
+	}
+\end{table*}
