@@ -1,7 +1,7 @@
 \begin{table*}[htb]
 	\begin{subtable}[t]{2\columnwidth}
 		\centering
-		%\resizebox{2\columnwidth}{!}
+		\resizebox{\columnwidth}{!}
 		{
 			\begin{tabular}{|c|c||c|c|c||c|c|c||c|c|c|}
 				\hline
@@ -42,7 +42,7 @@
 	\end{subtable}
 	\begin{subtable}[t]{2\columnwidth}
 		\centering
-		%\resizebox{2\columnwidth}{!}
+		\resizebox{\columnwidth}{!}
 		{
 			\begin{tabular}{|c|c||c|c|c||c|c|c||c|c|c|}
 				\hline

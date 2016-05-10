@@ -1,4 +1,4 @@
-\documentclass[twocolumn]{article}
+\documentclass[10pt,conference,a4paper]{IEEEtran}
 
 %
 %
@@ -12,7 +12,7 @@
 \usepackage{authblk}
 
 \usepackage{parskip}
-\usepackage[a4paper, includeheadfoot, margin=1cm]{geometry}
+%\usepackage[a4paper, includeheadfoot, margin=1cm]{geometry}
 
 \usepackage{subcaption}
 
@@ -222,7 +222,7 @@
 		See Figure \ref{fig:databases} for some examples.
 		\begin{figure*}
 			\centering
-			\resizebox{1.95\columnwidth}{!}
+			\resizebox{1.975\columnwidth}{!}
 			{
 				\includegraphics[scale=0.091]{ukbench00000.jpg}
 				\includegraphics[scale=0.091]{ukbench00002.jpg}
@@ -234,17 +234,17 @@
 				\includegraphics[scale=0.091]{ukbench09987.jpg}
 			}
 
-			\resizebox{1.95\columnwidth}{!}
+			\resizebox{1.975\columnwidth}{!}
 			{
-				\includegraphics[scale=0.123]{zubud1.png}
-				\includegraphics[scale=0.123]{zubud2.png}
-				\includegraphics[scale=0.123]{zubud3.png}
-				\includegraphics[scale=0.123]{zubud4.png}
-				\includegraphics[scale=0.123]{zubud5.png}
-				\includegraphics[scale=0.123]{zubud6.png}
+				\includegraphics[scale=0.123]{zubud1.jpg}
+				\includegraphics[scale=0.123]{zubud2.jpg}
+				\includegraphics[scale=0.123]{zubud3.jpg}
+				\includegraphics[scale=0.123]{zubud4.jpg}
+				\includegraphics[scale=0.123]{zubud5.jpg}
+				\includegraphics[scale=0.123]{zubud6.jpg}
 			}
 
-			\resizebox{1.95\columnwidth}{!}
+			\resizebox{1.975\columnwidth}{!}
 			{
 				\includegraphics[scale=0.82]{inria1.jpg}
 				\includegraphics[scale=0.82]{inria2.jpg}
@@ -315,7 +315,7 @@
 			See Figure \ref{fig:trnprogress} for a typical behavior of average loss ($L$ from Equation \eqref{eq:loss} divided by the number of triplets) throughout the learning process.
 			\begin{figure}
 				\centering
-				\resizebox{0.75\columnwidth}{!}
+				\resizebox{1\columnwidth}{!}
 				{
 					\input{trn.plot}
 				}
@@ -369,15 +369,15 @@
 			(from our models, we show only the one trained on FAST keypoints because both achieve approximately the same scores in these experiments).
 			\begin{figure*}[ht]
 				\centering
-				\resizebox{1.7\columnwidth}{!}
+				\resizebox{1.99\columnwidth}{!}
 				{
 					\input{ukb-vlad.plot}
 				}
-				\resizebox{1.7\columnwidth}{!}
+				\resizebox{1.99\columnwidth}{!}
 				{
 					\input{zubud-vlad.plot}
 				}
-				\resizebox{1.7\columnwidth}{!}
+				\resizebox{1.99\columnwidth}{!}
 				{
 					\input{holidays-vlad.plot}
 				}
@@ -398,11 +398,13 @@
 		Experimental results show that our descriptors compare well to the best available ones.
 		The code and the learned models can be obtained from \url{https://github.com/nenadmarkus/wlrn}. %(online since February 2016).
 
-	\textbf{Acknowledgements.}
+	\section*{Acknowledgements}
+	%\textbf{Acknowledgements.}
 	This research was partially supported by Visage Technologies AB (Link\"oping, Sweden), and by the Croatian Science Foundation (project 8065).
 
-	\small
-	\bibliographystyle{plain}
+	%\small
+	%\bibliographystyle{plain}
+	\bibliographystyle{IEEEtran}
 	\bibliography{references}
 
 \end{document}
