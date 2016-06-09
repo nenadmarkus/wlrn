@@ -108,22 +108,20 @@ As these are stored in the JPG format, you can inspect them with your favorite i
 ### 2. Prepare data-loading scripts
 
 To keep a desirable level of abstraction and enable large-scale learning, this code requires the user to provide his/her routines for generating triplets.
-An example can be found at `utils/tripletgen.lua`.
-The strings "--FOLDER--", "--NCHANNELS--" and "--PROBABILITY--" need to be replaced with appropriate ones, depending whether loading training or validation data.
+An example can be found in `utils/tripletgen.lua`.
+The strings "--TRN-FOLDER--", "--TRN-NCHANNELS--", "--TRN-PROBABILITY--", "--VLD-FOLDER--", "--VLD-NCHANNELS--" and "--VLD-PROBABILITY--" need to be replaced with appropriate ones.
 The following shell commands will do this for you (replace each slash in the folder paths with backslash+slash as required by `sed`).
 ```bash
-cp utils/tripletgen.lua trn-tripletgen.lua
-sed -i -e 's/--FOLDER--/"ukb-trn-bags"/g' trn-tripletgen.lua
-sed -i -e 's/--NCHANNELS--/3/g' trn-tripletgen.lua
-sed -i -e 's/--PROBABILITY--/0.33/g' trn-tripletgen.lua
-
-cp utils/tripletgen.lua val-tripletgen.lua
-sed -i -e 's/--FOLDER--/"ukb-val-bags"/g' val-tripletgen.lua
-sed -i -e 's/--NCHANNELS--/3/g' val-tripletgen.lua
-sed -i -e 's/--PROBABILITY--/1.0/g' val-tripletgen.lua
+cp utils/tripletgen.lua tripletgen.lua
+sed -i -e 's/--TRN-FOLDER--/"ukb-trn-bags"/g' tripletgen.lua
+sed -i -e 's/--TRN-NCHANNELS--/3/g' tripletgen.lua
+sed -i -e 's/--TRN-PROBABILITY--/0.33/g' tripletgen.lua
+sed -i -e 's/--VLD-FOLDER--/"ukb-val-bags"/g' tripletgen.lua
+sed -i -e 's/--VLD-NCHANNELS--/3/g' tripletgen.lua
+sed -i -e 's/--VLD-PROBABILITY--/1.0/g' tripletgen.lua
 ```
 
-After executing them, you should find two Lua files, `trn-tripletgen.lua` and `val-tripletgen.lua`, next to `wlrn.lua`.
+After executing them, you should find the script `tripletgen.lua` next to `wlrn.lua`.
 
 #### 3. Specify the descriptor-extractor structure
 

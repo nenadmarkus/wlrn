@@ -68,11 +68,8 @@ function generate_triplets(bags, n)
 end
 
 --
-return function()
-	--
-	local folder = --FOLDER--
-	local nchannels = --NCHANNELS--
-	local prob = --PROBABILITY--
+--
+function load_keypoint_bags(folder, nchannels, prob)
 
 	--
 	local bags = {}
@@ -130,5 +127,27 @@ return function()
 	p:close()
 
 	--
-	return generate_triplets(bags)
+	return bags
 end
+
+--
+function get_trn_triplets()
+	--
+	local folder = --TRN-FOLDER--
+	local nchannels = --TRN-NCHANNELS--
+	local prob = --TRN-PROBABILITY--
+
+	return generate_triplets(load_keypoint_bags(folder, nchannels, prob))
+end
+
+function get_vld_triplets()
+	--
+	local folder = --VLD-FOLDER--
+	local nchannels = --VLD-NCHANNELS--
+	local prob = --VLD-PROBABILITY--
+
+	return generate_triplets(load_keypoint_bags(folder, nchannels, prob))
+end
+
+--
+return get_trn_triplets, get_vld_triplets

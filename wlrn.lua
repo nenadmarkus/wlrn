@@ -12,9 +12,8 @@ cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
 cmd:argument("-e", "path to the Lua script which specifies the descriptor extractor structure")
-cmd:argument("-t", "training data loader script")
+cmd:argument("-t", "training/validation data-loading routines")
 cmd:text("Options")
-cmd:option("-v", "", "validation data loader script")
 cmd:option("-r", "", "read weights in Torch7 format")
 cmd:option("-w", "", "write weights in Torch7 format")
 cmd:option("-n", "", "number of training rounds")
@@ -252,15 +251,7 @@ end
 print('* thr = ' .. thr)
 
 --
-get_trn_triplets = dofile(params.t)
-
-if params.v ~= "" then
-	--
-	get_vld_triplets = dofile(params.v)
-else
-	--
-	get_vld_triplets = get_trn_triplets
-end
+get_trn_triplets, get_vld_triplets = dofile(params.t)
 
 --
 if params.n ~= "" then

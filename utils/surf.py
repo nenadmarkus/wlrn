@@ -18,7 +18,7 @@ while not stop:
 	hess = (hesshi + hesslo)/2.0
 
 	#
-	surf = cv2.xfeatures2d.SURF_create(hess)
+	surf = cv2.xfeatures2d.SURF_create(hess, 4, 2, True, False)
 	kpts = surf.detect(img, None)
 
 	#

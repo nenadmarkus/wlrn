@@ -178,6 +178,9 @@ int main(int argc, char* argv[])
 		keypoints.push_back(keypoint);
 	}
 
+	if(!keypoints.size())
+		return 0;
+
 	//
 	int npix=32;
 	float size=1.5f;
