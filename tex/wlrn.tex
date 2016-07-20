@@ -268,7 +268,7 @@
 		In our experiments, each image is downsampled by a factor of four to reduce noise, filter out irrelevant content and increase keypoint stability.
 		Next, image patches are extracted around detected keypoints.
 		These steps set up a basis for a fair comparison between different descriptors since we always use the same keypoints
-		(location, size\footnote{A patch of a fixed size around the keypoint is resampled to $32\times 32$ or $64\times 64$ pixels, depending on the requirements of the method.} and orientation).
+		(location, size\footnote{A patch of a fixed size around the keypoint is resampled to $32\times 32$ or $64\times 64$ pixels, depending on the requirements of the descriptor-extraction process.} and orientation).
 
 		\subsection{Learning convolutional features with our method}
 			The architecture of our neural network-based descriptor extractor $e$ can be seen in Table \ref{tbl:nn}.
