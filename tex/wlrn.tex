@@ -100,7 +100,8 @@
 		The standard dataset for learning and benchmarking various image keypoint descriptors was introduced by Brown et al. \cite{brown}. %: \url{http://www.cs.ubc.ca/~mbrown/patchdata/patchdata.html}.
 		It contains around $1.5$M patches cropped around difference of Gaussians keypoints \cite{sift} obtained from multiple views of three different scenes: the Notre Dame Cathedral, the Statue of Liberty and the Yosemite Half Dome.
 		High-quality keypoint labels were obtained with a multi-view stereo algorithm \cite{multiviewstereo}.
-		This makes the dataset reliable both for learning local image-patch descriptors from "handcrafted" features \cite{cvx,binboost,rfd} and large models based on convolutional neural networks \cite{osendorfer,zagoruyko,matchnet,fracking,convdesc,pnnet}.
+		This makes the dataset reliable both for learning local image-patch descriptors from "handcrafted" features \cite{cvx,binboost,rfd} and large models based on convolutional neural networks \cite{osendorfer,zagoruyko,matchnet,fracking,convdesc,pnnet}
+		(the siamese-network framework of Hadsell et al. \cite{siamesenet}).
 		However, in the general case, this kind of data is relatively hard to obtain, even more so for non-image data (e.g., 3D models, depth maps, voxel data, video signals, etc.).
 
 		Instead of having a dataset with individual keypoint correspondences (which lead to dataset types \eqref{eq:kppairs} and \eqref{eq:kptriplets}) for learning local descriptors as in most prior work, we assume a set of labeled \emph{bags of keypoints}

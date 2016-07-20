@@ -133,8 +133,7 @@ private:
 
 int main(int argc, char* argv[])
 {
-	int i, dim, type;
-	char* magic;
+	int i;
 
 	//
 	if(argc<4)
@@ -144,7 +143,7 @@ int main(int argc, char* argv[])
 		printf("\t** image path\n");
 		printf("\t** patch size (in pixels)\n");
 		printf("\t** keypoint size multiplier\n");
-		printf("\t** optional: output file (if none provided, the programs writes to stdout)\n");
+		printf("\t** output file\n");
 
 		//
 		return 0;
@@ -199,65 +198,48 @@ int main(int argc, char* argv[])
 	//*/
 
 	patchExtractor.compute(im, keypoints, descriptors);
-	dim = patchExtractor.descriptorSize();
 
 	//
-	if(argc==5)
+	if(!USECOLOR)
 	{
-		if(!USECOLOR)
-		{
-			int i, r, c;
+		int i, r, c;
 
-			cv::Mat img(descriptors.rows*npix, npix, CV_8UC1);
+		cv::Mat img(descriptors.rows*npix, npix, CV_8UC1);
 
-			for(i=0; i<descriptors.rows; ++i)
-				for(r=0; r<npix; ++r)
-					for(c=0; c<npix; ++c)
-						img.at<uint8_t>(i*npix+r, c) = descriptors.at<uint8_t>(i, r*npix + c);
+		for(i=0; i<descriptors.rows; ++i)
+			for(r=0; r<npix; ++r)
+				for(c=0; c<npix; ++c)
+					img.at<uint8_t>(i*npix+r, c) = descriptors.at<uint8_t>(i, r*npix + c);
 
-			cv::imwrite(argv[4], img);
-		}
-		else
-		{
-			int i, r, c;
-
-			cv::Mat img(descriptors.rows*npix, npix, CV_8UC3);
-
-			for(i=0; i<descriptors.rows; ++i)
-			{
-				//
-				uint8_t* d = descriptors.ptr<uint8_t>(i);
-
-				//
-				for(r=0; r<npix; ++r)
-					for(c=0; c<npix; ++c)
-					{
-						img.at<cv::Vec3b>(i*npix+r, c)[0] = d[0*npix*npix + r*npix + c];
-						img.at<cv::Vec3b>(i*npix+r, c)[1] = d[1*npix*npix + r*npix + c];
-						img.at<cv::Vec3b>(i*npix+r, c)[2] = d[2*npix*npix + r*npix + c];
-					}
-			}
-
-			//
-
-			std::vector<int> compression_params;
-			compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-			compression_params.push_back(9);
-
-			cv::imwrite(argv[4], img, compression_params);
-		}
+		cv::imwrite(argv[4], img);
 	}
 	else
 	{
-		//
-		FILE* file = stdout;
+		int i, r, c;
 
-		fwrite("Bpch", 1, 4, file); // magic
-		fwrite(&dim, sizeof(int), 1, file);
-		fwrite(&descriptors.rows, sizeof(int), 1, file);
+		cv::Mat img(descriptors.rows*npix, npix, CV_8UC3);
 
 		for(i=0; i<descriptors.rows; ++i)
-			fwrite(descriptors.ptr<uint8_t>(i), sizeof(uint8_t), dim, file);
+		{
+			//
+			uint8_t* d = descriptors.ptr<uint8_t>(i);
+
+			//
+			for(r=0; r<npix; ++r)
+				for(c=0; c<npix; ++c)
+				{
+					img.at<cv::Vec3b>(i*npix+r, c)[0] = d[0*npix*npix + r*npix + c];
+					img.at<cv::Vec3b>(i*npix+r, c)[1] = d[1*npix*npix + r*npix + c];
+					img.at<cv::Vec3b>(i*npix+r, c)[2] = d[2*npix*npix + r*npix + c];
+				}
+		}
+
+		//
+		std::vector<int> compression_params;
+		compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+		compression_params.push_back(9);
+
+		cv::imwrite(argv[4], img, compression_params);
 	}
 
 	//
