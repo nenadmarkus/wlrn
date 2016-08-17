@@ -135,7 +135,7 @@ However, to learn their parameters, some parts of `wlrn.lua` might need addition
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua models/3x32x32_to_64.lua trn-tripletgen.lua -v val-tripletgen.lua -w params.t7
+	th wlrn.lua models/3x32x32_to_64.lua tripletgen.lua -w params.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
 The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/3x32x32_to_64.lua`.
