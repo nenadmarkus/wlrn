@@ -133,6 +133,11 @@ end
 
 function compute_average_loss(triplets)
 	--
+	-- switch to validation mode
+	--
+	T:evaluate()
+
+	--
 	local avgloss = 0.0
 
 	for i=1, #triplets do
@@ -222,7 +227,9 @@ end
 
 function train_with_sgd(triplets, niters, bsize, eta)
 	--
-    local time = sys.clock()
+	-- switch to train mode
+	--
+	T:training()
 
 	--
 	T:zeroGradParameters()
