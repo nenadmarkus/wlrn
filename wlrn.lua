@@ -32,10 +32,10 @@ E = dofile(params.e)()
 print(E)
 
 --
-E3 = nn.ParallelTable()
-E3:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
-E3:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
-E3:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
+T = nn.ParallelTable()
+T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
+T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
+T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
 
 --
 M = nn.Sequential()
@@ -47,20 +47,29 @@ M:add( nn.MM(false, true) )
 M:add( nn.AddConstant(1.0)):add(nn.MulConstant(0.5) ) -- rescale similarities to [0, 1]
 M:add( nn.Sequential():add(nn.AddConstant(-thr)):add(nn.MulConstant(beta)):add(nn.Sigmoid()) ) -- kill all scores below the threshold
 M:add( nn.Max(2) )
+--
+M:add( nn.Contiguous() )
+M:add( nn.Sum() )
+-- Instead of adding a small constant, eps, just to the score of the positive bag,
+-- we add a 1.0 to both the scores of the positive and negative bags.
+-- This prevents the division-by-zero error and can be seen as a form of additive regularization:
+-- https://en.wikipedia.org/wiki/Additive_smoothing
+M:add( nn.AddConstant(1) )
 
 --
 C = nn.ConcatTable()
 
-C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(2))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
 C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(3))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
+C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(2))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
 
 --
-T = nn.Sequential()
-T:add(E3)
-T:add(C)
+L = nn.Sequential()
+L:add(C)
+L:add(nn.CDivTable())
 
 -- cuda
 T = T:cuda()
+L = L:cuda()
 
 -- if you don't have cuDNN installed, please comment out the following four lines (beware: cunn is *significantly* slower than cuDNN)
 require 'cudnn'
@@ -83,7 +92,6 @@ end
 
 print('* the model has ' .. pT:size()[1] .. ' parameters')
 
---
 function model_forward(triplet)
 	--
 	--
@@ -104,31 +112,14 @@ end
 ----------------------------- loss computation -----------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
-eps = 1e-6
-
-function loss_forward(v)
+function loss_forward(triplet)
 	--
-	n = v[1]:size()[1]
-
-	--
-	sap = v[1]:sum()/n
-	san = v[2]:sum()/n
-
-	--
-	return san/(sap + eps)
+	return L:forward(triplet)[1]
 end
 
-function loss_backward(v)
+function loss_backward(triplet)
 	--
-	gap = torch.ones(n):mul(-san/(sap+eps)^2):mul(1.0/n)
-	gan = torch.ones(n):mul(1.0/(sap+eps)):mul(1.0/n)
-
-	--
-	gap = gap:cuda()
-	gan = gan:cuda()
-
-	--
-	return {gap, gan}
+	return L:backward(triplet, torch.ones(1):cuda())
 end
 
 function compute_average_loss(triplets)
@@ -136,6 +127,7 @@ function compute_average_loss(triplets)
 	-- switch to validation mode
 	--
 	T:evaluate()
+	L:evaluate()
 
 	--
 	local avgloss = 0.0
@@ -149,12 +141,16 @@ function compute_average_loss(triplets)
 		}
 
 		--
-		local v = model_forward(triplet)
+		local descs = model_forward(triplet)
 
-		avgloss = avgloss + loss_forward(v)
+		avgloss = avgloss + loss_forward(descs)
 	end
 
 	avgloss = avgloss/#triplets
+
+	--
+	T:clearState()
+	L:clearState()
 
 	--
 	return avgloss
@@ -187,23 +183,15 @@ function apply_optim_sgd_step(triplets, batch, eta)
 
 			-- forward pass
 			--
-
-			--
 			local v = model_forward(triplet)
-
 			--
 			loss = loss + loss_forward(v)
 
 			-- backward pass
 			--
-
-			--
 			local dloss = loss_backward(v)
-
 			--
 			model_backward(triplet, dloss)
-
-			--
 		end
 
 		--
@@ -230,6 +218,7 @@ function train_with_sgd(triplets, niters, bsize, eta)
 	-- switch to train mode
 	--
 	T:training()
+	L:training()
 
 	--
 	T:zeroGradParameters()
@@ -248,6 +237,8 @@ function train_with_sgd(triplets, niters, bsize, eta)
 	end
 
 	--
+	T:clearState()
+	L:clearState()
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -320,6 +311,7 @@ for i = 1, nrounds do
 	if e<ebest then
 		--
 		if params.w ~= "" then
+			--
 			torch.save(params.w, pT:float())
 		end
 
