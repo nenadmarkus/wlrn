@@ -147,6 +147,11 @@ p:copy(torch.load('params.t7'))
 torch.save('net.t7', n)
 ```
 
+## Known issues
+
+The module `nn.SpatialBatchNormalization` does not work well with `nn.ParallelTable`.
+Thus, avoid its use when specifying a custom network architecture.
+
 ## Contact
 
 For any additional information contact me at <nenad.markus@fer.hr>.

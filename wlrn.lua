@@ -135,9 +135,9 @@ function compute_average_loss(triplets)
 	for i=1, #triplets do
 		--
 		local triplet = {
-			triplets[i][1]:clone():cuda(),
-			triplets[i][2]:clone():cuda(),
-			triplets[i][3]:clone():cuda()
+			triplets[i][1]:cuda(),
+			triplets[i][2]:cuda(),
+			triplets[i][3]:cuda()
 		}
 
 		--
@@ -176,9 +176,9 @@ function apply_optim_sgd_step(triplets, batch, eta)
 		for i=1, #batch do
 			--
 			local triplet = {
-				triplets[batch[i]][1]:clone():cuda(),
-				triplets[batch[i]][2]:clone():cuda(),
-				triplets[batch[i]][3]:clone():cuda()
+				triplets[batch[i]][1]:cuda(),
+				triplets[batch[i]][2]:cuda(),
+				triplets[batch[i]][3]:cuda()
 			}
 
 			-- forward pass
@@ -279,8 +279,8 @@ time = sys.clock() - time
 print("    ** elapsed time: " .. time .. " [s]")
 
 --
-eta = 1e-3
-bsize = 8
+eta = 1e-4
+bsize = 16
 
 for i = 1, nrounds do
 	--
@@ -312,6 +312,7 @@ for i = 1, nrounds do
 		--
 		if params.w ~= "" then
 			--
+			print("* saving model parameters to `" .. params.w .. "`")
 			torch.save(params.w, pT:float())
 		end
 

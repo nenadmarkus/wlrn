@@ -2,6 +2,10 @@
 require 'nn'
 
 --
+-- this model was used in the original ICPR paper that introduced the WLRN method
+--
+
+--
 function get_3x32x32_to_64(p)
 	--
 	--
@@ -31,7 +35,7 @@ function get_3x32x32_to_64(p)
 	--
 	if p then
 		--
-		params = encoder:getParameters()
+		local params = encoder:getParameters()
 		params:copy(p)
 	end
 
