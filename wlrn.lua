@@ -17,6 +17,7 @@ cmd:text("Options")
 cmd:option("-r", "", "read weights in Torch7 format")
 cmd:option("-w", "", "write weights in Torch7 format")
 cmd:option("-n", "", "number of training rounds")
+cmd:option("-g", "", "GPU ID")
 
 params = cmd:parse(arg)
 
@@ -26,6 +27,11 @@ params = cmd:parse(arg)
 
 --
 torch.setdefaulttensortype('torch.FloatTensor')
+
+if params.g ~= "" then
+	--
+	cutorch.setDevice(tonumber(params.g))
+end
 
 --
 E = dofile(params.e)()
