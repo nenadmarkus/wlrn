@@ -34,14 +34,8 @@ if params.g ~= "" then
 end
 
 --
-E = dofile(params.e)()
-print(E)
-
---
-T = nn.ParallelTable()
-T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
-T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
-T:add(E:clone('weight', 'bias', 'gradWeight', 'gradBias'))
+T = dofile(params.e)()
+print(T)
 
 --
 M = nn.Sequential()
@@ -81,7 +75,9 @@ L = L:cuda()
 require 'cudnn'
 cudnn.benchmark = true
 cudnn.fastest = true
-T = cudnn.convert(T, cudnn)
+T = cudnn.convert(T, cudnn, function(module)
+	return torch.type(module):find('SpatialBatchNormalization') -- don't use cudnn for batch normalization
+end)
 
 --
 pT, gT = T:getParameters()
@@ -96,18 +92,28 @@ if params.r ~= "" then
 	pT:copy(p)
 end
 
-print('* the model has ' .. pT:size()[1] .. ' parameters')
+print('* the model has ' .. pT:size(1) .. ' parameters')
 
 function model_forward(triplet)
 	--
 	--
-	return T:forward( triplet )
+	local na=triplet[1]:size(1)
+	local np=triplet[2]:size(1)
+	local nn=triplet[3]:size(1)
+	--
+	local descs = T:forward( torch.cat(triplet, 1) )
+	--
+	return {
+		descs:narrow(1, 1, na),
+		descs:narrow(1, na+1, np),
+		descs:narrow(1, na+np+1, nn)
+	}
 end
 
 function model_backward(triplet, dloss)
 	--
 	--
-	return T:backward(triplet, dloss)
+	return T:backward(torch.cat(triplet, 1), torch.cat(dloss, 1))
 end
 
 ---
@@ -332,7 +338,7 @@ for i = 1, nrounds do
 			--
 			eta = eta/2.0
 			--
-			bsize = 8
+			bsize = 16
 		else
 			--
 			bsize = 2*bsize

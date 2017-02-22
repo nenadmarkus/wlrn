@@ -29,7 +29,7 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 }
 ```
 
-## Some results (to be updated soon)
+## Some results
 
 A network trained with our method (code in this repo) can be obtained from the folder `models/`.
 This network extracts `64f` descriptors of unit length from local patches of size `32x32`.
@@ -90,7 +90,7 @@ Follow these steps.
 
 #### 1. Prepare bags of keypoints
 
-Download <http://46.101.250.137/data/ukb.tar> and extract the archive.
+Download <https://nenadmarkus.com/data/ukb.tar> and extract the archive.
 It contains two folders with JPG images: `ukb-trn/` and `ukb-val/`.
 Images from the first folder will be used for training and images from the second one for checking the validation error.
 
@@ -128,8 +128,9 @@ After executing them, you should find the script `tripletgen.lua` next to `wlrn.
 The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
 See the default model in `models/3x32x32_to_64.lua` for an example.
 
-Of course, you can try different architectures.
-However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking (such as learning rates).
+You are encouraged to try different architectures as the default one does not perform very well in all settings
+(this fact was experimentally discovered after the paper has already been published).
+However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking, such as learning rates.
 
 #### 4. Start the learning script
 
@@ -147,10 +148,9 @@ p:copy(torch.load('params.t7'))
 torch.save('net.t7', n)
 ```
 
-## Known issues
+## License
 
-The module `nn.SpatialBatchNormalization` does not work well with `nn.ParallelTable`.
-Thus, avoid its use when specifying a custom network architecture.
+MIT.
 
 ## Contact
 
