@@ -1,22 +1,6 @@
 # Learning Local Descriptors from Weakly-Labeled Data
 
-Current best local descriptors are learned on a large dataset of matching and non-matching keypoint pairs.
-However, data of this kind is not always available since detailed keypoint correspondences can be hard to establish (e.g., for non-image data).
-On the other hand, we can often obtain labels for pairs of keypoint bags.
-For example, keypoint bags extracted from two images of the same object under different views form a matching pair, and keypoint bags extracted from images of different objects form a non-matching pair.
-On average, matching pairs should contain more corresponding keypoints than non-matching pairs.
-We propose to learn local descriptors from such information where local correspondences are not known in advance.
-
-<center><img src="teaser.png" alt="Teaser" style="width: 512px;"/></center>
-
-Each image in the dataset (first row) is processed with a keypoint detector (second row) and transformed into a bag of visual words (third row).
-Some bags form matching pairs (green arrow) and some form non-matching pairs (red arrows).
-On average, matching pairs should contain more corresponding local visual words than non-matching pairs.
-We propose to *learn local descriptors* by optimizing the mentioned local correspondence criterion on a given dataset.
-Note that prior work assumes local correspondences are known in advance.
-
-The details of the method can be found in our technical report available on [arXiv](http://arxiv.org/abs/1603.09095).
-If you use our results and/or ideas, please cite the report as (BibTeX)
+This repo contains the official implementation of the method from the following paper:
 
 ```
 @misc
@@ -28,6 +12,21 @@ If you use our results and/or ideas, please cite the report as (BibTeX)
 	eprint = {arXiv:1603.09095}
 }
 ```
+
+This work was presented at the International Conference on Pattern Recognition in December 2016.
+Some basic information about the method is available [here](INFO.md).
+
+## Requirements
+
+To run the code, you will need:
+
+* Torch;
+* a CUDA-capable GPU;
+* cuDNN;
+* OpenCV 3.
+
+OpenCV is required just for the keypoint-extraction process that prepares the training data (files in `utils/`).
+The library is not required by the method core which is in `wlrn.lua`.
 
 ## Some results
 
@@ -84,7 +83,7 @@ print(torch.norm(d[1] - d[2]))
 
 Notice that although it was trained on `32x32` patches, the model can be applied in a fully-convolutional manner to images of any size (the third module of the architecture contains only convolutions, ReLUs and pooling operations).
 
-## How to repeat the training
+## Training
 
 Follow these steps.
 
@@ -128,25 +127,18 @@ After executing them, you should find the script `tripletgen.lua` next to `wlrn.
 The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
 See the default model in `models/3x32x32_to_64.lua` for an example.
 
-You are encouraged to try different architectures as the default one does not perform very well in all settings
-(this fact was experimentally discovered after the paper has already been published).
+You can generate the default model with `th models/3x32x32_to_64.lua models/net.t7`.
+
+You are encouraged to try different architectures as the default one does not perform very well in all settings.
 However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking, such as learning rates.
 
 #### 4. Start the learning script
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua models/3x32x32_to_64.lua tripletgen.lua -w params.t7
+	th wlrn.lua models/net.t7 tripletgen.lua -w models/net-trained.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
-The file `params.t7` contains the learned parameters of the descriptor extractor specified in `models/3x32x32_to_64.lua`.
-Use the following code to deploy them:
-```lua
-n = dofile('models/3x32x32_to_64.lua')():float()
-p = n:getParameters()
-p:copy(torch.load('params.t7'))
-torch.save('net.t7', n)
-```
 
 ## License
 

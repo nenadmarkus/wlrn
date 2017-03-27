@@ -2,7 +2,7 @@
 require 'nn'
 
 --
--- this model was used in the original ICPR paper that introduced the WLRN method
+-- this model was used in our ICPR paper
 --
 
 --
@@ -44,4 +44,5 @@ function get_3x32x32_to_64(p)
 end
 
 --
-return get_3x32x32_to_64
+net = get_3x32x32_to_64():float()
+torch.save(arg[1], net)

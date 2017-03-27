@@ -4,6 +4,8 @@ require 'torch'
 require 'cunn'
 require 'optim'
 
+torch.setdefaulttensortype('torch.FloatTensor')
+
 ----------------------------------------------------------------------------------------------------
 --------------------- parse command line options ---------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -11,10 +13,9 @@ require 'optim'
 cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
-cmd:argument("-e", "path to the Lua script which specifies the descriptor extractor structure")
+cmd:argument("-e", "path to convnet (in Torch7 nn format)")
 cmd:argument("-t", "training/validation data-loading routines")
 cmd:text("Options")
-cmd:option("-r", "", "read weights in Torch7 format")
 cmd:option("-w", "", "write weights in Torch7 format")
 cmd:option("-n", "", "number of training rounds")
 cmd:option("-g", "", "GPU ID")
@@ -26,52 +27,12 @@ params = cmd:parse(arg)
 ----------------------------------------------------------------------------------------------------
 
 --
-torch.setdefaulttensortype('torch.FloatTensor')
-
-if params.g ~= "" then
-	--
-	cutorch.setDevice(tonumber(params.g))
-end
-
---
-T = dofile(params.e)()
+T = torch.load(params.e):cuda()
+print('* model architecture:')
 print(T)
 
---
-M = nn.Sequential()
-
-thr = 0.8
-beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
-
-M:add( nn.MM(false, true) )
-M:add( nn.AddConstant(1.0)):add(nn.MulConstant(0.5) ) -- rescale similarities to [0, 1]
-M:add( nn.Sequential():add(nn.AddConstant(-thr)):add(nn.MulConstant(beta)):add(nn.Sigmoid()) ) -- kill all scores below the threshold
-M:add( nn.Max(2) )
---
-M:add( nn.Contiguous() )
-M:add( nn.Sum() )
--- Instead of adding a small constant, eps, just to the score of the positive bag,
--- we add a 1.0 to both the scores of the positive and negative bags.
--- This prevents the division-by-zero error and can be seen as a form of additive regularization:
--- https://en.wikipedia.org/wiki/Additive_smoothing
-M:add( nn.AddConstant(1) )
-
---
-C = nn.ConcatTable()
-
-C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(3))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
-C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(2))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
-
---
-L = nn.Sequential()
-L:add(C)
-L:add(nn.CDivTable())
-
--- cuda
-T = T:cuda()
-L = L:cuda()
-
--- if you don't have cuDNN installed, please comment out the following four lines (beware: cunn is *significantly* slower than cuDNN)
+-- if you don't have cuDNN installed, please comment out the following lines
+-- (beware: cunn is *significantly* slower than cuDNN)
 require 'cudnn'
 cudnn.benchmark = true
 cudnn.fastest = true
@@ -81,17 +42,6 @@ end)
 
 --
 pT, gT = T:getParameters()
-
-if params.r ~= "" then
-	--
-	print("* loading model parameters from '" .. params.r .. "'")
-
-	p = torch.load(params.r)
-
-	--
-	pT:copy(p)
-end
-
 print('* the model has ' .. pT:size(1) .. ' parameters')
 
 function model_forward(triplet)
@@ -116,14 +66,42 @@ function model_backward(triplet, dloss)
 	return T:backward(torch.cat(triplet, 1), torch.cat(dloss, 1))
 end
 
----
----
----
-
 ----------------------------------------------------------------------------------------------------
 ----------------------------- loss computation -----------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
+--
+thr = 0.8
+beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
+
+print('* matching threshold set to ' .. thr)
+
+--
+M = nn.Sequential()
+M:add( nn.MM(false, true) )
+M:add( nn.AddConstant(1.0)):add(nn.MulConstant(0.5) ) -- rescale similarities to [0, 1]
+M:add( nn.Sequential():add(nn.AddConstant(-thr)):add(nn.MulConstant(beta)):add(nn.Sigmoid()) ) -- kill all scores below the threshold
+M:add( nn.Max(2) )
+M:add( nn.Contiguous() )
+M:add( nn.Sum() )
+-- Instead of adding a small constant, eps, just to the score of the positive bag,
+-- we add a 1.0 to both the scores of the positive and negative bags.
+-- This prevents the division-by-zero error and can be seen as a form of additive regularization:
+-- https://en.wikipedia.org/wiki/Additive_smoothing
+M:add( nn.AddConstant(1) )
+
+--
+C = nn.ConcatTable()
+C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(3))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
+C:add(nn.Sequential():add(nn.ConcatTable():add(nn.SelectTable(1)):add(nn.SelectTable(2))):add(M:clone('weight','bias', 'gradWeight','gradBias')))
+
+--
+L = nn.Sequential()
+L:add(C)
+L:add(nn.CDivTable())
+L = L:cuda()
+
+--
 function loss_forward(triplet)
 	--
 	return L:forward(triplet)[1]
@@ -258,9 +236,6 @@ end
 ----------------------------------------------------------------------------------------------------
 
 --
-print('* thr = ' .. thr)
-
---
 get_trn_triplets, get_vld_triplets = dofile(params.t)
 
 --
@@ -297,7 +272,7 @@ bsize = 16
 for i = 1, nrounds do
 	--
 	--
-	print("* SGD (" .. i .. ")")
+	print("* ROUND (" .. i .. ")")
 
 	--
 	time = sys.clock()
@@ -324,8 +299,15 @@ for i = 1, nrounds do
 		--
 		if params.w ~= "" then
 			--
-			print("* saving model parameters to `" .. params.w .. "`")
-			torch.save(params.w, pT:float())
+			print("* saving the model to `" .. params.w .. "`")
+			--
+			T:float()
+			T = cudnn.convert(T, nn)
+			--
+			torch.save(params.w, T)
+			--
+			T = cudnn.convert(T, cudnn)
+			T:cuda()
 		end
 
 		--
@@ -352,8 +334,5 @@ for i = 1, nrounds do
 
 	--
 	ttriplets = {}
-
 	collectgarbage()
-
-	--
 end

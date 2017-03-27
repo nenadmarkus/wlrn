@@ -102,4 +102,5 @@ end
 --y = n:forward(x)
 
 --
-return get_pixdiff
+net = get_pixdiff():float()
+torch.save(arg[1], net)

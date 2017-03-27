@@ -49,4 +49,5 @@ function get_desc(p)
 end
 
 --
-return get_desc
+net = get_desc():float()
+torch.save(arg[1], net)
