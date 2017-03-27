@@ -33,12 +33,15 @@ print(T)
 
 -- if you don't have cuDNN installed, please comment out the following lines
 -- (beware: cunn is *significantly* slower than cuDNN)
-require 'cudnn'
-cudnn.benchmark = true
-cudnn.fastest = true
-T = cudnn.convert(T, cudnn, function(module)
-	return torch.type(module):find('SpatialBatchNormalization') -- don't use cudnn for batch normalization
-end)
+usecudnn = true
+if usecudnn then
+	require 'cudnn'
+	cudnn.benchmark = true
+	cudnn.fastest = true
+	T = cudnn.convert(T, cudnn, function(module)
+		return torch.type(module):find('SpatialBatchNormalization') -- don't use cudnn for batch normalization
+	end)
+end
 
 --
 pT, gT = T:getParameters()
@@ -299,15 +302,14 @@ for i = 1, nrounds do
 		--
 		if params.w ~= "" then
 			--
+			local clone = T:clone()
+			clone:float()
+			if usecudnn then
+				clone = cudnn.convert(clone, nn)
+			end
+			--
 			print("* saving the model to `" .. params.w .. "`")
-			--
-			T:float()
-			T = cudnn.convert(T, nn)
-			--
-			torch.save(params.w, T)
-			--
-			T = cudnn.convert(T, cudnn)
-			T:cuda()
+			torch.save(params.w, clone)
 		end
 
 		--
