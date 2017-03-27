@@ -13,7 +13,7 @@ torch.setdefaulttensortype('torch.FloatTensor')
 cmd = torch.CmdLine()
 cmd:text()
 cmd:text("Arguments")
-cmd:argument("-e", "path to convnet (in Torch7 nn format)")
+cmd:argument("-m", "path to the model (in Torch7 nn format)")
 cmd:argument("-t", "training/validation data-loading routines")
 cmd:text("Options")
 cmd:option("-w", "", "write weights in Torch7 format")
@@ -27,7 +27,7 @@ params = cmd:parse(arg)
 ----------------------------------------------------------------------------------------------------
 
 --
-T = torch.load(params.e):cuda()
+T = torch.load(params.m):cuda()
 print('* model architecture:')
 print(T)
 

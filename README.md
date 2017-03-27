@@ -28,61 +28,6 @@ To run the code, you will need:
 OpenCV is required just for the keypoint-extraction process that prepares the training data (files in `utils/`).
 The library is not required by the method core which is in `wlrn.lua`.
 
-## Some results
-
-A network trained with our method (code in this repo) can be obtained from the folder `models/`.
-This network extracts `64f` descriptors of unit length from local patches of size `32x32`.
-Here is its structure:
-
-```
-nn.Sequential {
-  [input -> (1) -> (2) -> (3) -> (4) -> (5) -> output]
-  (1): nn.MulConstant
-  (2): nn.View
-  (3): nn.Sequential {
-    [input -> (1) -> (2) -> (3) -> (4) -> (5) -> (6) -> (7) -> (8) -> output]
-    (1): nn.SpatialConvolution(3 -> 32, 3x3)
-    (2): nn.ReLU
-    (3): nn.SpatialConvolution(32 -> 64, 4x4, 2,2)
-    (4): nn.ReLU
-    (5): nn.SpatialConvolution(64 -> 128, 3x3)
-    (6): nn.SpatialMaxPooling(2,2,2,2)
-    (7): nn.SpatialConvolution(128 -> 32, 1x1)
-    (8): nn.SpatialConvolution(32 -> 64, 6x6)
-  }
-  (4): nn.View
-  (5): nn.Normalize(2)
-}
-```
-
-The structure is specified in `models/3x32x32_to_64.lua`.
-The net parameters are stored as a vector of floats at `models/3x32x32_to_64.params`.
-This is to reduce the storage requirements (i.e., the repo size).
-Use the following code to deploy and use the net.
-
-```lua
--- load the network parameters first
-params = torch.load('models/3x32x32_to_64.params')
-
--- create the network and initialize its weights with loaded data
-n = dofile('models/3x32x32_to_64.lua')(params):float()
-
--- generate a random batch of five 32x32 patches (each pixel is a float from [0, 255])
-p = torch.rand(5, 3, 32, 32):float():mul(255)
-
--- propagate the batch through the net to obtain descriptors
--- (note that no patch prepocessing is required (such as mean substraction))
-d = n:forward(p)
-
--- an appropriate similarity between descriptors is, for example, a dot product ...
-print(d[1]*d[2])
-
--- ... or you can use the Euclidean distance
-print(torch.norm(d[1] - d[2]))
-```
-
-Notice that although it was trained on `32x32` patches, the model can be applied in a fully-convolutional manner to images of any size (the third module of the architecture contains only convolutions, ReLUs and pooling operations).
-
 ## Training
 
 Follow these steps.
@@ -139,6 +84,10 @@ Finally, learn the parameters of the network by running the traininig script:
 	th wlrn.lua models/net.t7 tripletgen.lua -w models/net-trained.t7
 
 The training should finish in about a day on a GeForce GTX 970 with cuDNN.
+
+## Pretrained models
+
+You can download some pretrained models from <https://nenadmarkus.com/data/wlrn-pretrained.zip>.
 
 ## License
 
