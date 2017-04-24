@@ -25,12 +25,8 @@ Some basic information about the method is available [here](INFO.md).
 To run the code, you will need:
 
 * Torch7 installed;
-* a CUDA-capable GPU;
-* cuDNN;
-* Python with OpenCV.
-
-Python and OpenCV are required for the keypoint-extraction process that prepares the training data.
-The library is not required by the method core which is in `wlrn.lua`.
+* a CUDA-capable GPU, cuDNN;
+* Python with OpenCV (needed for training-data preparation).
 
 ## Training
 
