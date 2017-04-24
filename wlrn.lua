@@ -18,7 +18,6 @@ cmd:argument("-t", "training/validation data-loading routines")
 cmd:text("Options")
 cmd:option("-w", "", "write weights in Torch7 format")
 cmd:option("-n", "", "number of training rounds")
-cmd:option("-g", "", "GPU ID")
 
 params = cmd:parse(arg)
 

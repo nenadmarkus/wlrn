@@ -42,8 +42,12 @@ done
 
 cp ../utils/tripletgen.lua tripletgen-ukb.lua
 sed -i -e 's/--TRN-FOLDER--/"datasets\/ukb-trn-patches"/g' tripletgen-ukb.lua
-sed -i -e 's/--TRN-NCHANNELS--/3/g' tripletgen-ukb.lua
 sed -i -e 's/--TRN-PROBABILITY--/0.33/g' tripletgen-ukb.lua
 sed -i -e 's/--VLD-FOLDER--/"datasets\/ukb-val-patches"/g' tripletgen-ukb.lua
-sed -i -e 's/--VLD-NCHANNELS--/3/g' tripletgen-ukb.lua
 sed -i -e 's/--VLD-PROBABILITY--/1.0/g' tripletgen-ukb.lua
+
+cp ../utils/tripletgen.py tripletgen-ukb.py
+sed -i -e 's/--TRN-FOLDER--/"datasets\/ukb-trn-patches"/g' tripletgen-ukb.py
+sed -i -e 's/--TRN-PROBABILITY--/0.33/g' tripletgen-ukb.py
+sed -i -e 's/--VLD-FOLDER--/"datasets\/ukb-val-patches"/g' tripletgen-ukb.py
+sed -i -e 's/--VLD-PROBABILITY--/1.0/g' tripletgen-ukb.py
