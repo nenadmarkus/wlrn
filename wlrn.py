@@ -50,7 +50,7 @@ def loss_forward(triplet):
 	# kill all scores below `thr`
 	AP = F.sigmoid(AP.add(-thr).mul(beta))
 	AN = F.sigmoid(AN.add(-thr).mul(beta))
-	#
+	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 def compute_average_loss(triplets):
