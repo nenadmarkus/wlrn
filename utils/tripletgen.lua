@@ -74,26 +74,21 @@ function load_keypoint_bags(folder, nchannels, prob)
 	--
 	local bags = {}
 
-	local p = io.popen('ls ' .. folder .. '/*.jpg')
-	for path in p:lines() do
+	for filename in paths.iterfiles(folder) do
 		--
 		-- discard bag with probability (1-prob)
-		if math.random()<=prob then
+		if math.random()<=prob and paths.extname(filename)=='jpg' then
 			--
 			-- extract bag label from filename
 			local tmp = {}
-			for t in string.gmatch(path, "[^/]+") do
+			for t in string.gmatch(filename, '[^.]+') do
 				table.insert(tmp, t)
 			end
-			local label = {}
-			for t in string.gmatch(tmp[#tmp], "[^.]+") do
-				table.insert(label, t)
-			end
-			label = label[1]
+			local label = tmp[1]
 
 			--
 			-- load patches
-			local data = image.load(path, nchannels, 'byte')
+			local data = image.load(folder .. '/' .. filename, nchannels, 'byte')
 
 			if 1==nchannels then
 				--
@@ -124,7 +119,6 @@ function load_keypoint_bags(folder, nchannels, prob)
 			table.insert(bags, bag)
 		end
 	end
-	p:close()
 
 	--
 	return bags

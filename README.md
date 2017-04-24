@@ -1,6 +1,6 @@
 # Learning Local Descriptors from Weakly-Labeled Data
 
-This repo contains the official implementation of the method from the following paper:
+This repo contains the official implementation of the method from the following paper ([arXiv](https://arxiv.org/abs/1603.09095)):
 
 ```
 @misc
@@ -20,70 +20,44 @@ Some basic information about the method is available [here](INFO.md).
 
 To run the code, you will need:
 
-* Torch;
+* Torch7 installed;
 * a CUDA-capable GPU;
 * cuDNN;
-* OpenCV 3.
+* Python with OpenCV.
 
-OpenCV is required just for the keypoint-extraction process that prepares the training data (files in `utils/`).
+Python and OpenCV are required for the keypoint-extraction process that prepares the training data.
 The library is not required by the method core which is in `wlrn.lua`.
 
 ## Training
 
 Follow these steps.
 
-#### 1. Prepare bags of keypoints
+#### 1. Prepare the training data
 
-Download <https://nenadmarkus.com/data/ukb.tar> and extract the archive.
-It contains two folders with JPG images: `ukb-trn/` and `ukb-val/`.
-Images from the first folder will be used for training and images from the second one for checking the validation error.
+Run `prepare-ukb-dataset.sh`:
 
-Move to the folder `utils/` and compile `fast.cpp` and `extp.cpp` with the provided `makefile`.
-These are the keypoint detection and patch extraction programs.
-Use the script `batch_extract.sh` to transform the downloaded images into bags of keypoints:
-```bash
-bash batch_extract.sh ukb-trn/ ukb-trn-bags/ 128 32
-bash batch_extract.sh ukb-val/ ukb-val-bags/ 128 32
-```
+	bash prepare-ukb-dataset.sh
 
-Extracted patches should now be in `ukb-trn-bags/` and `ukb-val-bags/`.
-As these are stored in the JPG format, you can inspect them with your favorite image viewer.
+The script will download the UKB dataset, extract keypoints from the images and store them in an appropriate format.
+The script will also prepare data-loading routines by modifying the `utils/tripletgen.lua` template.
 
-### 2. Prepare data-loading scripts
-
-To keep a desirable level of abstraction and enable large-scale learning, this code requires the user to provide his/her routines for generating triplets.
-An example can be found in `utils/tripletgen.lua`.
-The strings "--TRN-FOLDER--", "--TRN-NCHANNELS--", "--TRN-PROBABILITY--", "--VLD-FOLDER--", "--VLD-NCHANNELS--" and "--VLD-PROBABILITY--" need to be replaced with appropriate ones.
-The following shell commands will do this for you (replace each slash in the folder paths with backslash+slash as required by `sed`).
-```bash
-cp utils/tripletgen.lua tripletgen.lua
-sed -i -e 's/--TRN-FOLDER--/"ukb-trn-bags"/g' tripletgen.lua
-sed -i -e 's/--TRN-NCHANNELS--/3/g' tripletgen.lua
-sed -i -e 's/--TRN-PROBABILITY--/0.33/g' tripletgen.lua
-sed -i -e 's/--VLD-FOLDER--/"ukb-val-bags"/g' tripletgen.lua
-sed -i -e 's/--VLD-NCHANNELS--/3/g' tripletgen.lua
-sed -i -e 's/--VLD-PROBABILITY--/1.0/g' tripletgen.lua
-```
-
-After executing them, you should find the script `tripletgen.lua` next to `wlrn.lua`.
-
-#### 3. Specify the descriptor-extractor structure
+#### 2. Specify the descriptor-extraction structure
 
 The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
 See the default model in `models/3x32x32_to_64.lua` for an example.
 
-You can generate the default model with `th models/3x32x32_to_64.lua models/net.t7`.
+You can generate the default model by running `th models/3x32x32_to_64.lua models/net.t7`.
 
 You are encouraged to try different architectures as the default one does not perform very well in all settings.
 However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking, such as learning rates.
 
-#### 4. Start the learning script
+#### 3. Start the learning script
 
 Finally, learn the parameters of the network by running the traininig script:
 
-	th wlrn.lua models/net.t7 tripletgen.lua -w models/net-trained.t7
+	th wlrn.lua models/net.t7 datasets/tripletgen-ukb.lua -w models/net-trained.t7
 
-The training should finish in about a day on a GeForce GTX 970 with cuDNN.
+The training should finish in a couple of hours on a modern GPU.
 
 ## Pretrained models
 
