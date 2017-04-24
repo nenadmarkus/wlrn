@@ -47,9 +47,6 @@ The script will also prepare data-loading routines by modifying the `utils/tripl
 
 #### 2. Specify the descriptor-extraction structure
 
-The model is specified with a Lua script which returns a function for constructing the descriptor extraction network.
-See the default model in `models/3x32x32_to_64.lua` for an example.
-
 You can generate the default model by running `th models/3x32x32_to_64.lua models/net.t7`.
 
 You are encouraged to try different architectures as the default one does not perform very well in all settings.
