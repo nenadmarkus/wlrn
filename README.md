@@ -24,7 +24,7 @@ Some basic information about the method is available [here](INFO.md).
 
 To run the code, you will need:
 
-* Torch7 installed;
+* Torch7 or PyTorch installed (both are supported);
 * a CUDA-capable GPU, cuDNN;
 * Python with OpenCV (needed for training-data preparation).
 
@@ -39,20 +39,27 @@ Run `prepare-ukb-dataset.sh`:
 	bash prepare-ukb-dataset.sh
 
 The script will download the UKB dataset, extract keypoints from the images and store them in an appropriate format.
-The script will also prepare data-loading routines by modifying the `utils/tripletgen.lua` template.
+The script will also prepare data-loading routines by modifying the `utils/tripletgen.lua` and `utils/tripletgen.py` templates.
 
 #### 2. Specify the descriptor-extraction structure
 
-You can generate the default model by running `th models/3x32x32_to_64.lua models/net.t7`.
+For Troch7-based implementation, you can generate the default model by running `th models/3x32x32_to_64.lua models/net.t7`.
+For PyTorch, the default model-specification class is `models/3x32x32_to_128.py`.
 
 You are encouraged to try different architectures as the default one does not perform very well in all settings.
-However, to learn their parameters, some parts of `wlrn.lua` might need additional tweaking, such as learning rates.
+However, to learn their parameters, some parts of training scripts might need additional tweaking, such as learning rates.
 
 #### 3. Start the learning script
 
-Finally, learn the parameters of the network by running the traininig script:
+Finally, learn the parameters of the network by running the traininig script.
+
+For Troch7, run
 
 	th wlrn.lua models/net.t7 datasets/tripletgen-ukb.lua -w models/net-trained.t7
+
+For PyTorch, run
+
+	wlrn.py models/3x32x32_to_128.py datasets/tripletgen-ukb.py models/net.pytorch
 
 The training should finish in a couple of hours on a modern GPU.
 
