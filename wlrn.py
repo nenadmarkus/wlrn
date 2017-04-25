@@ -163,8 +163,8 @@ for i in range(0, nrounds):
 
 	if e<ebest:
 		#
-		print("* saving the model to `" + WRITEPATH + "`")
-		torch.save(MODEL, WRITEPATH)
+		print("* saving model parameters to `" + WRITEPATH + "`")
+		torch.save(MODEL.state_dict(), WRITEPATH)
 		#
 		ebest = e
 	elif elast<e:
