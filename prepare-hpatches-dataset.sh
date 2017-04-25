@@ -25,19 +25,16 @@ mkdir -p hpatches-trn
 python -c "#
 import json
 import os
-from PIL import Image
+import shutil
 FOLDERS  = json.load(open('hpatches-benchmark/tasks/splits/splits.json'))['a']['train']
 HPATCHES = 'hpatches-benchmark/data/hpatches-release'
 DESTINAT = 'hpatches-trn'
 for root, dirs, files in os.walk(HPATCHES):
 	for f in files:
 		if f.endswith('.png') and root.split('/')[-1] in FOLDERS:
-			try:
-				src = os.path.join(root, f)
-				dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f.replace('.png', '.jpg'))
-				Image.open(src).save(dst)
-			except:
-				print('* cannot process <' + src + '> (image too large?)')"
+			src = os.path.join(root, f)
+			dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f)
+			shutil.copyfile(src, dst)"
 
 #
 # PREPARE tripletgen.lua
