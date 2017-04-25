@@ -40,7 +40,7 @@ def load_keypoint_bags(folder, prob):
 	#
 	for root, dirs, files in os.walk(folder):
 		for f in files:
-			if f.endswith(".jpg") and random.random()<=prob:
+			if (f.endswith(".jpg") or f.endswith(".png")) and random.random()<=prob:
 				#
 				data = totensor( Image.open(os.path.join(root, f)) ).mul(255).byte()
 				#
