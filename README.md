@@ -14,11 +14,10 @@ This repo contains the official implementation of the method from the following 
 ```
 
 This work was presented at the International Conference on Pattern Recognition in December 2016.
+Some basic information is available [here](INFO.md).
 
 A newer (updated) version of the paper is available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf).
 We plan to submit it to a journal at some point.
-
-Some basic information about the method is available [here](INFO.md).
 
 ## Requirements
 
