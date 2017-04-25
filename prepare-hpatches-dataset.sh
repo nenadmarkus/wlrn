@@ -25,7 +25,7 @@ mkdir -p hpatches-trn
 python -c "#
 import json
 import os
-import shutil
+from PIL import Image
 FOLDERS  = json.load(open('hpatches-benchmark/tasks/splits/splits.json'))['a']['train']
 HPATCHES = 'hpatches-benchmark/data/hpatches-release'
 DESTINAT = 'hpatches-trn'
@@ -33,11 +33,8 @@ for root, dirs, files in os.walk(HPATCHES):
 	for f in files:
 		if f.endswith('.png') and root.split('/')[-1] in FOLDERS:
 			src = os.path.join(root, f)
-			dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f)
-			shutil.copyfile(src, dst)"
-
-mogrify -format jpg hpatches-trn/*.png
-rm hpatches-trn/*.png
+			dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f.replace('.png', '.jpg'))
+			Image.open(src).save(dst)"
 
 #
 # PREPARE tripletgen.lua
