@@ -51,3 +51,10 @@ sed -i -e 's/--TRN-FOLDER--/"datasets\/ukb-trn-patches"/g' tripletgen-ukb.py
 sed -i -e 's/--TRN-PROBABILITY--/0.33/g' tripletgen-ukb.py
 sed -i -e 's/--VLD-FOLDER--/"datasets\/ukb-val-patches"/g' tripletgen-ukb.py
 sed -i -e 's/--VLD-PROBABILITY--/1.0/g' tripletgen-ukb.py
+
+#
+#
+#
+
+#th models/3x32x32_to_64.lua models/3x32x32_to_64.t7
+#th wlrn.lua models/3x32x32_to_64.t7 datasets/tripletgen-ukb.lua -w models/3x32x32_to_64.t7 
