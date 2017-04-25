@@ -36,6 +36,9 @@ for root, dirs, files in os.walk(HPATCHES):
 			dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f)
 			shutil.copyfile(src, dst)"
 
+mogrify -format jpg datasets/hpatches-trn/*.png
+rm datasets/hpatches-trn/*.png
+
 #
 # PREPARE tripletgen.lua
 #

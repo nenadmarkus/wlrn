@@ -16,7 +16,7 @@ function get_desc(p)
 	--
 	local conv = nn.Sequential()
 
-	conv:add(nn.SpatialConvolution(1, 16, 3, 3, 1, 1, 1, 1))
+	conv:add(nn.SpatialConvolution(3, 16, 3, 3, 1, 1, 1, 1))
 	conv:add(nn.Tanh())
 	conv:add(nn.SpatialConvolution(16, 32, 5, 5, 2, 2, 2, 2))
 	conv:add(nn.Tanh())
