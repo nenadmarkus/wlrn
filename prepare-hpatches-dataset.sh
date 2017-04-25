@@ -32,9 +32,12 @@ DESTINAT = 'hpatches-trn'
 for root, dirs, files in os.walk(HPATCHES):
 	for f in files:
 		if f.endswith('.png') and root.split('/')[-1] in FOLDERS:
-			src = os.path.join(root, f)
-			dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f.replace('.png', '.jpg'))
-			Image.open(src).save(dst)"
+			try:
+				src = os.path.join(root, f)
+				dst = os.path.join(DESTINAT, root.split('/')[-1] + '.' +  f.replace('.png', '.jpg'))
+				Image.open(src).save(dst)
+			except:
+				print('* cannot process <' + src + '> (image too large?)')"
 
 #
 # PREPARE tripletgen.lua
