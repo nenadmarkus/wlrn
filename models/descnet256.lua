@@ -32,7 +32,7 @@ function get_desc(p)
 	local encoder = nn.Sequential()
 
 	encoder:add(nn.MulConstant(1.0/255.0))
-	encoder:add(nn.View(1, 32, 32))
+	encoder:add(nn.View(3, 32, 32))
 	encoder:add(conv)
 	encoder:add(nn.View(256))
 	encoder:add(nn.Normalize(2))
