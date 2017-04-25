@@ -77,7 +77,7 @@ function load_keypoint_bags(folder, nchannels, prob)
 	for filename in paths.iterfiles(folder) do
 		--
 		-- discard bag with probability (1-prob)
-		if math.random()<=prob and paths.extname(filename)=='jpg' then
+		if math.random()<=prob and (paths.extname(filename)=='jpg' or paths.extname(filename)=='png') then
 			--
 			-- extract bag label from filename
 			local tmp = {}
