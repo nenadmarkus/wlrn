@@ -43,11 +43,11 @@ def load_keypoint_bags(folder, prob):
 			if (f.endswith(".jpg") or f.endswith(".png")) and random.random()<=prob:
 				#
 				data = totensor( Image.open(os.path.join(root, f)) ).mul(255).byte()
-				if len(data.size()) == 2:
+				if data.size(0) == 1:
 					# grayscale image
-					nrows = data.size(0)
-					ncols = data.size(1)
-					data = data.unsqueeze(0).expand(3, nrows, ncols)
+					nrows = data.size(1)
+					ncols = data.size(2)
+					data = data.expand(3, nrows, ncols).contiguous()
 				#
 				data = data.view(3, int(data.size(1)/data.size(2)), data.size(2), data.size(2)).transpose(0, 1).contiguous()
 				#
