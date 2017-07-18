@@ -18,9 +18,8 @@ net:evaluate()
 
 --
 DB = {}
-p = io.popen('ls ' .. arg[3] .. '/*.jpg')
-for path in p:lines() do
-	if math.random() <= 0.4 then
+for filename in paths.iterfiles(arg[3]) do
+	if math.random()<=0.4 and (paths.extname(filename)=='jpg' or paths.extname(filename)=='png') then
 		--
 		-- load patches
 		local data = image.load(path, 3, 'byte')
