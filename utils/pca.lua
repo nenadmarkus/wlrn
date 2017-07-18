@@ -34,7 +34,6 @@ for filename in paths.iterfiles(arg[3]) do
 		table.insert(DB, data)
     end
 end
-p:close()
 
 --
 -- select a subset of descriptors
