@@ -22,6 +22,7 @@ for filename in paths.iterfiles(arg[3]) do
 	if math.random()<=0.4 and (paths.extname(filename)=='jpg' or paths.extname(filename)=='png') then
 		--
 		-- load patches
+		path = arg[3] .. '/' .. filename
 		local data = image.load(path, 3, 'byte')
 		data = data:view(3, data:size(2)/data:size(3), data:size(3)*data:size(3)):transpose(1, 2):contiguous()
 		data = data:view(data:size(1), 3*data:size(3))
