@@ -19,7 +19,7 @@ net:evaluate()
 --
 DB = {}
 for filename in paths.iterfiles(arg[3]) do
-	if math.random()<=0.4 and (paths.extname(filename)=='jpg' or paths.extname(filename)=='png') then
+	if math.random()<=0.5 and (paths.extname(filename)=='jpg' or paths.extname(filename)=='png') then
 		--
 		-- load patches
 		path = arg[3] .. '/' .. filename
