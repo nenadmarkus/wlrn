@@ -23,7 +23,7 @@ We plan to submit it to a journal at some point.
 
 To run the code, you will need:
 
-* Torch7 or PyTorch installed (both are supported);
+* Torch7 or PyTorch (both are supported);
 * a CUDA-capable GPU, cuDNN;
 * Python with OpenCV (needed for training-data preparation).
 
