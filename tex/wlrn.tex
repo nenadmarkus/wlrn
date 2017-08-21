@@ -403,9 +403,175 @@
 	%\textbf{Acknowledgements.}
 	This research was partially supported by Visage Technologies AB (Link\"oping, Sweden), and by the Croatian Science Foundation (project 8065).
 
-	%\small
-	%\bibliographystyle{plain}
 	\bibliographystyle{IEEEtran}
 	\bibliography{references}
+
+	\newpage
+	\section*{Experiments on the HPatches benchmark}
+		The experiments presented so far have all been designed by us.
+		To have a more fair and independent comparison, here we present experiments on the HPatches benchmark \cite{hpatches}.
+		This benchmark enables an objective comparison of local image descriptors on a large dataset.
+		The images in the dataset contain significant illumination and viewpoint changes.
+		The matches between local keypoints in the corresponding images are provided as ground truth.
+		To simulate the noise that the keypoint detectors introduce in practice, the precomputed keypoints are perturbed in their position, scale and orientation by three increasing noise levels:
+		easy, hard and tough.
+
+		The evaluation is done through a strict protocol consisting of three tasks: matching, retrieval and verification.
+		The performance on each of the tasks provides an insight into the descriptor's potential for a certain application
+		(the tasks were designed to imitate typical use cases).
+		The matching task measures how many keypoints does a descriptor match correctly between a target and a reference image.
+		The retrieval task measures how well a descriptor retrieves similar patches from a large collection.
+		The verification task measures how well a descriptor separates positive from negative pairs of patches.
+		The performance on each of the tasks is measured by precision/recall and their variations.
+		For more details, see the paper that introduced the benchmark \cite{hpatches}.
+
+		For our experiments, we use the same training/testing data partition as the one used in the ECCV2016 workshop "Local Features: State of the art, open problems and performance evaluation"
+		(this is split "a" in the HPatches benchmark).
+		We report the results for two descriptors learned with our method on separate datasets, both having the same architecture.
+		The first one was learned on the dataset used in our previous experiments.
+		The second one was learned on the training partition of the HPatches dataset\footnote{We used only image-level annotations when constructing keypoint bags. Also, note that the training and testing sequences are disjoint, so the keypoints on which the evaluation is performed are not included in the training set.}.
+		These descriptors are denoted as SKAR-Prev and SKAR-HPatches, respectively.
+		The other descriptors were precomputed by the authors of the benchmark:
+		SIFT \cite{sift} and three convolutional descriptors \cite{tfeat,zagoruyko,convdesc} learned on the dataset of Borwn et al. \cite{brown}.
+		See tables \ref{tbl:hpatches-verification-inter}, \ref{tbl:hpatches-verification-intra}, \ref{tbl:hpatches-matching} and \ref{tbl:hpatches-retrieval} for the results on each of the tasks.
+		\begin{table}
+			\centering
+			\resizebox{0.9\columnwidth}{!}
+			{
+			\begin{subtable}{.75\linewidth}
+				\centering
+				\begin{tabular}{|c||c|c|c|}
+					\hline
+					Noise level	&	Easy	&	Hard	&	Tough	\\
+					\hline
+					\hline
+					SIFT \cite{sift}	&	$0.849$	&	$0.657$	&	$0.512$	\\
+					\hline
+					TFeat \cite{tfeat}	&	$0.912$	&	$0.848$	&	$0.752$	\\
+					\hline
+					DeepCompare \cite{zagoruyko}	&	$0.845$	&	$0.724$	&	$0.609$	\\
+					\hline
+					DeepDesc \cite{convdesc}	&	$0.904$	&	$0.830$	&	$0.733$	\\
+					\hline
+					\hline
+					SKAR-Prev	&	$0.896$	&	$0.747$	&	$0.609$	\\
+					\hline
+					SKAR-HPatches	&	$\mathbf{0.939}$	&	$\mathbf{0.869}$	&	$\mathbf{0.757}$	\\
+					\hline
+				\end{tabular}
+				\caption
+				{
+					Negative patch pairs sampled from different sequences.
+				}
+				\label{tbl:hpatches-verification-inter}
+			\end{subtable}
+			}
+			\resizebox{0.9\columnwidth}{!}
+			{
+			\begin{subtable}{.75\linewidth}
+				\centering
+				\begin{tabular}{|c||c|c|c|}
+					\hline
+					Noise level	&	Easy	&	Hard	&	Tough	\\
+					\hline
+					\hline
+					SIFT \cite{sift}	&	$0.783$	&	$0.570$	&	$0.429$	\\
+					\hline
+					TFeat \cite{tfeat}	&	$0.868$	&	$0.781$	&	$0.671$	\\
+					\hline
+					DeepCompare \cite{zagoruyko}	&	$0.785$	&	$0.644$	&	$0.524$	\\
+					\hline
+					DeepDesc \cite{convdesc}	&	$0.851$	&	$0.751$	&	$0.640$	\\
+					\hline
+					\hline
+					SKAR-Prev	&	$0.852$	&	$0.678$	&	$0.532$	\\
+					\hline
+					SKAR-HPatches	&	$\mathbf{0.910}$	&	$\mathbf{0.820}$	&	$\mathbf{0.694}$	\\
+					\hline
+				\end{tabular}
+				\caption
+				{
+					Negative patch pairs sampled from the same sequence.
+				}
+				\label{tbl:hpatches-verification-intra}
+			\end{subtable}
+			}
+			\caption
+			{
+				Average-precision scores on the verification task of the HPatches benchmark.
+				Each experiment consists of $2\times 10^5$ positive pairs and $10^6$ negative pairs.
+			}
+		\end{table}
+		\begin{table}
+			\centering
+			\resizebox{0.85\columnwidth}{!}
+			{
+			\begin{tabular}{|c||c|c|c|}
+				\hline
+				Noise level	&	Easy	&	Hard	&	Tough	\\
+				\hline
+				\hline
+				SIFT \cite{sift}	&	$0.453$	&	$0.193$	&	$0.086$	\\
+				\hline
+				TFeat \cite{tfeat}	&	$0.467$	&	$0.259$	&	$0.131$	\\
+				\hline
+				DeepCompare \cite{zagoruyko}	&	$0.399$	&	$0.199$	&	$0.095$	\\
+				\hline
+				DeepDesc \cite{convdesc}	&	$0.430$	&	$0.239$	&	$0.125$	\\
+				\hline
+				\hline
+				SKAR-Prev	&	$0.495$	&	$0.226$	&	$0.102$	\\
+				\hline
+				SKAR-HPatches	&	$\mathbf{0.616}$	&	$\mathbf{0.404}$	&	$\mathbf{0.235}$	\\
+				\hline
+			\end{tabular}
+			}
+			\caption
+			{
+				Mean average precision on the image-matching task of the HPatches benchmark, measured over multiple predefined image pairs.
+			}
+			\label{tbl:hpatches-matching}
+		\end{table}
+		\begin{table}
+			\centering
+			\resizebox{0.85\columnwidth}{!}
+			{
+			\begin{tabular}{|c||c|c|c|}
+				\hline
+				Noise level	&	Easy	&	Hard	&	Tough	\\
+				\hline
+				\hline
+				SIFT \cite{sift}	&	$0.545$	&	$0.264$	&	$0.134$	\\
+				\hline
+				TFeat \cite{tfeat}	&	$0.551$	&	$0.344$	&	$0.189$	\\
+				\hline
+				DeepCompare \cite{zagoruyko}	&	$0.527$	&	$0.309$	&	$0.170$	\\
+				\hline
+				DeepDesc \cite{convdesc}	&	$0.561$	&	$0.374$	&	$0.228$	\\
+				\hline
+				\hline
+				SKAR-Prev	&	$0.595$	&	$0.319$	&	$0.169$	\\
+				\hline
+				SKAR-HPatches	&	$\mathbf{0.704}$	&	$\mathbf{0.519}$	&	$\mathbf{0.333}$	\\
+				\hline
+			\end{tabular}
+			}
+			\caption
+			{
+				Mean average precision on the retrieval task of the Hpatches benchmark
+				($10^4$ experiemnts of retrieving $5$ patches corresponding to a query among $2\times 10^4$ distractors).
+			}
+			\label{tbl:hpatches-retrieval}
+		\end{table}
+
+		The descriptor learned with our method on the HPatches training dataset, SKAR-HPatches, outperforms all other approaches despite being more compact (only $64$ dimensions),
+		especially on the image-matching task for which it was explicitly tuned for.
+		This again demonstrates the importance of tuning the neural network to the properties of the dataset.
+		By comparison, the SKAR-Prev descriptor obtains significantly worse results on all three tasks, especially in the "hard" and "tough" noise-level settings.
+		This is despite both descriptors having the same architecture and dimensionality.
+		As for other convolutional descriptors \cite{tfeat,zagoruyko,convdesc}, all obtain similar results to SKAR-Prev and outperform SIFT \cite{sift}
+		(although not by a large margin).
+		Their high performance on the dataset of Brown et al. \cite{brown} did not result in high performance on the HPatches benchmark.
+		This provides evidence that we cannot rely on a single dataset for generating high-quality descriptors for all tasks.
 
 \end{document}

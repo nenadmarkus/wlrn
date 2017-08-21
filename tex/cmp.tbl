@@ -1,5 +1,6 @@
 \begin{table*}[htb]
-	\begin{subtable}[t]{2\columnwidth}
+	\centering
+	\begin{subtable}[t]{1.9\columnwidth}
 		\centering
 		\resizebox{\columnwidth}{!}
 		{
@@ -40,7 +41,7 @@
 		}
 		\label{tbl:cmpfast}
 	\end{subtable}
-	\begin{subtable}[t]{2\columnwidth}
+	\begin{subtable}[t]{1.9\columnwidth}
 		\centering
 		\resizebox{\columnwidth}{!}
 		{
