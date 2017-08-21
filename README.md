@@ -33,9 +33,9 @@ Follow these steps.
 
 #### 1. Prepare the training data
 
-Run `prepare-ukb-dataset.sh`:
+Run `datasets/prepare-ukb-dataset.sh`:
 
-	bash prepare-ukb-dataset.sh
+	bash datasets/prepare-ukb-dataset.sh
 
 The script will download the UKB dataset, extract keypoints from the images and store them in an appropriate format.
 The script will also prepare data-loading routines by modifying the `utils/tripletgen.lua` and `utils/tripletgen.py` templates.
