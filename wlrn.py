@@ -54,7 +54,7 @@ def loss_forward(triplet):
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 def compute_average_loss(triplets):
-	# switch to validation mode
+	# switch to evaluation mode
 	MODEL.eval()
 
 	#
