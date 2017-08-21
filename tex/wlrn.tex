@@ -407,11 +407,11 @@
 	\bibliography{references}
 
 	\newpage
+	In the experiments that follow, we refer to the descriptors learned by our method as SKAR descriptors
+	(from \textbf{Smoothed Keypoint-mAtching Ratio}, motivated by Equation \eqref{eq:loss}).
+
 	\section*{Experiments on the HPatches benchmark}
-		The experiments presented so far have all been designed by us.
 		To have a more fair and independent comparison, here we present experiments on the HPatches benchmark \cite{hpatches}.
-		This benchmark enables an objective comparison of local image descriptors on a large dataset.
-		The images in the dataset contain significant illumination and viewpoint changes.
 		The matches between local keypoints in the corresponding images are provided as ground truth.
 		To simulate the noise that the keypoint detectors introduce in practice, the precomputed keypoints are perturbed in their position, scale and orientation by three increasing noise levels:
 		easy, hard and tough.
