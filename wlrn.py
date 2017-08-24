@@ -11,13 +11,19 @@ import random
 # parse command line options
 #
 
-if len(sys.argv) != 4:
-	print("* usage: python wlrn.py <model-definition.py> <triplet-generator.py> <best-model-save-path>")
+if len(sys.argv) == 4:
+	MODELFILE = sys.argv[1]
+	LOADPATH = None
+	TRIPLETGENFILE = sys.argv[2]
+	WRITEPATH = sys.argv[3]
+else if len(sys.argv) == 5:
+	MODELFILE = sys.argv[1]
+	LOADPATH = sys.argv[2]
+	TRIPLETGENFILE = sys.argv[3]
+	WRITEPATH = sys.argv[4]
+else:
+	print("* usage: python wlrn.py <model definition.py> <triplet generator.py> <params save path>")
 	sys.exit()
-
-MODELFILE = sys.argv[1]
-TRIPLETGENFILE = sys.argv[2]
-WRITEPATH = sys.argv[3]
 
 #
 # model
@@ -26,6 +32,8 @@ WRITEPATH = sys.argv[3]
 MODELFILE = sys.argv[1]
 exec(open(MODELFILE).read())
 MODEL = init()
+if LOADPATH:
+	MODEL.load_state_dict(torch.load(LOADPATH))
 MODEL.cuda()
 
 def model_forward(triplet):
@@ -63,9 +71,9 @@ def compute_average_loss(triplets):
 	for i in range(0, len(triplets)):
 		#
 		triplet = [
-			torch.autograd.Variable(triplets[i][0].float().cuda()),
-			torch.autograd.Variable(triplets[i][1].float().cuda()),
-			torch.autograd.Variable(triplets[i][2].float().cuda())
+			torch.autograd.Variable(triplets[i][0].float().cuda(), volatile=True),
+			torch.autograd.Variable(triplets[i][1].float().cuda(), volatile=True),
+			torch.autograd.Variable(triplets[i][2].float().cuda(), volatile=True)
 		]
 
 		#
