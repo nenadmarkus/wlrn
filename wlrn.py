@@ -16,7 +16,7 @@ if len(sys.argv) == 4:
 	LOADPATH = None
 	TRIPLETGENFILE = sys.argv[2]
 	WRITEPATH = sys.argv[3]
-else if len(sys.argv) == 5:
+elif len(sys.argv) == 5:
 	MODELFILE = sys.argv[1]
 	LOADPATH = sys.argv[2]
 	TRIPLETGENFILE = sys.argv[3]
