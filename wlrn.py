@@ -11,29 +11,27 @@ import random
 # parse command line options
 #
 
-if len(sys.argv) == 4:
-	MODELFILE = sys.argv[1]
-	LOADPATH = None
-	TRIPLETGENFILE = sys.argv[2]
-	WRITEPATH = sys.argv[3]
-elif len(sys.argv) == 5:
-	MODELFILE = sys.argv[1]
-	LOADPATH = sys.argv[2]
-	TRIPLETGENFILE = sys.argv[3]
-	WRITEPATH = sys.argv[4]
-else:
-	print("* usage: python wlrn.py <model definition.py> <triplet generator.py> <params save path>")
-	sys.exit()
+import argparse
+parser = argparse.ArgumentParser()
+
+parser.add_argument('modeldef', type=str, help='a script that define the descriptor-extractor model')
+parser.add_argument('tripletgen', type=str, help='a script that generates training and validation triplets')
+parser.add_argument('--writepath', type=str, default=None, help='where to write the learned model weights')
+parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
+parser.add_argument('--learnrate', type=float, default=1e-4, help='RMSprop learning rate')
+parser.add_argument('--batchsize', type=int, default=32, help='batch size')
+
+args = parser.parse_args()
 
 #
 # model
 #
 
-MODELFILE = sys.argv[1]
-exec(open(MODELFILE).read())
+exec(open(args.modeldef).read())
 MODEL = init()
-if LOADPATH:
-	MODEL.load_state_dict(torch.load(LOADPATH))
+if args.loadpath:
+	print('* loading pretrained weights from ' + args.loadpath)
+	MODEL.load_state_dict(torch.load(args.loadpath))
 MODEL.cuda()
 
 def model_forward(triplet):
@@ -120,7 +118,8 @@ def train_with_sgd(triplets, niters, batchsize, eta):
 # initialize stuff
 #
 
-exec(open(TRIPLETGENFILE).read())
+print('* tripletgen: ' + args.tripletgen)
+exec(open(args.tripletgen).read())
 get_trn_triplets, get_vld_triplets = init()
 
 #
@@ -141,8 +140,8 @@ t = time.time() - t
 print("    ** elapsed time: " + str(t) + " [s]")
 
 #
-eta = 1e-4
-batchsize = 16
+eta = args.learnrate
+batchsize = args.batchsize
 nrounds = 128
 
 for i in range(0, nrounds):
@@ -175,14 +174,6 @@ for i in range(0, nrounds):
 		torch.save(MODEL.state_dict(), WRITEPATH)
 		#
 		ebest = e
-	elif elast<e:
-		if 64==batchsize:
-			#
-			eta = eta/2.0
-			batchsize = 16
-		else:
-			#
-			batchsize = 2*batchsize
 
 	#
 	elast = e
