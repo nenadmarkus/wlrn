@@ -58,7 +58,7 @@ For Troch7, run
 
 For PyTorch, run
 
-	python wlrn.py models/3x32x32_to_128.py datasets/tripletgen-ukb.py models/net.pytorch
+	python wlrn.py models/3x32x32_to_128.py datasets/tripletgen-ukb.py --writepath models/3x32x32_to_128.pth
 
 The training should finish in a couple of hours on a modern GPU.
 
