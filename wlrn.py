@@ -170,8 +170,8 @@ for i in range(0, nrounds):
 
 	if e<ebest:
 		#
-		print("* saving model parameters to `" + WRITEPATH + "`")
-		torch.save(MODEL.state_dict(), WRITEPATH)
+		print("* saving model parameters to `" + args.writepath + "`")
+		torch.save(MODEL.state_dict(), args.writepath)
 		#
 		ebest = e
 
