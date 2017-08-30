@@ -16,9 +16,11 @@ cmd:text("Arguments")
 cmd:argument("-m", "path to the model (in Torch7 nn format)")
 cmd:argument("-t", "training/validation data-loading routines")
 cmd:text("Options")
-cmd:option("-w", "", "write weights in Torch7 format")
-cmd:option("-n", "", "number of training rounds")
+cmd:option("-w", "", "model write destination (in Torch7 nn format)")
 cmd:option("-g", "", "GPU ID")
+cmd:option("-n", "128", "number of training rounds")
+cmd:option("-l", "0.0001", "learning rate")
+cmd:option("-b", "32", "batch size")
 
 params = cmd:parse(arg)
 
@@ -73,6 +75,22 @@ function model_backward(triplet, dloss)
 	--
 	--
 	return T:backward(torch.cat(triplet, 1), torch.cat(dloss, 1))
+end
+
+function select_hard_negatives(triplet)
+	--
+	--
+	local negs = {}
+	for i=1, #triplet[3] do
+		--
+		table.insert(negs, T:forward(triplet[3][i]:cuda()):clone())
+	end
+	negs = torch.cat(negs, 1)
+	--
+	local _, inds = torch.max(torch.mm(T:forward(triplet[1]:cuda()), negs:t()), 2)
+	inds = inds:squeeze():long()
+	--
+	return {triplet[1], triplet[2], torch.cat(triplet[3], 1):index(1, inds)}
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -133,11 +151,12 @@ function compute_average_loss(triplets)
 
 	for i=1, #triplets do
 		--
-		local triplet = {
-			triplets[i][1]:cuda(),
-			triplets[i][2]:cuda(),
-			triplets[i][3]:cuda()
-		}
+		local triplet = triplets[i]
+		if type(triplet[3]) == 'table' then
+			--
+			triplet = select_hard_negatives(triplet)
+		end
+		triplet = {triplet[1]:cuda(), triplet[2]:cuda(), triplet[3]:cuda()}
 
 		--
 		local descs = model_forward(triplet)
@@ -159,7 +178,7 @@ end
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
-function apply_optim_sgd_step(triplets, batch, eta)
+function apply_optim_sgd_step(triplets, eta)
 	--
 	local feval = function(x)
 		--
@@ -172,12 +191,12 @@ function apply_optim_sgd_step(triplets, batch, eta)
 
 		local loss = 0.0
 
-		for i=1, #batch do
+		for i=1, #triplets do
 			--
 			local triplet = {
-				triplets[batch[i]][1]:cuda(),
-				triplets[batch[i]][2]:cuda(),
-				triplets[batch[i]][3]:cuda()
+				triplets[i][1]:cuda(),
+				triplets[i][2]:cuda(),
+				triplets[i][3]:cuda()
 			}
 
 			-- forward pass
@@ -194,8 +213,8 @@ function apply_optim_sgd_step(triplets, batch, eta)
 		end
 
 		--
-		loss = loss/#batch
-		gT:div(#batch)
+		loss = loss/#triplets
+		gT:div(#triplets)
 
 		-- regularization
 		--coeff = 1e-4
@@ -228,11 +247,17 @@ function train_with_sgd(triplets, niters, bsize, eta)
 		local batch = {}
 
 		for j=1, bsize do
-			table.insert(batch, math.random(1, #triplets))
+			--
+			local triplet = triplets[math.random(1, #triplets)]
+			if type(triplet[3]) == 'table' then
+				--
+				triplet = select_hard_negatives(triplet)
+			end
+			table.insert(batch, triplet)
 		end
 
 		--
-		apply_optim_sgd_step(triplets, batch, eta)
+		apply_optim_sgd_step(batch, eta)
 	end
 
 	--
@@ -241,24 +266,12 @@ function train_with_sgd(triplets, niters, bsize, eta)
 end
 
 ----------------------------------------------------------------------------------------------------
------------------------------ initialize stuff -----------------------------------------------------
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 
 --
 get_trn_triplets, get_vld_triplets = dofile(params.t)
-
---
-if params.n ~= "" then
-	--
-	nrounds = tonumber(params.n)
-else
-	--
-	nrounds = 128
-end
-
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
 
 --
 time = sys.clock()
@@ -275,8 +288,10 @@ time = sys.clock() - time
 print("    ** elapsed time: " .. time .. " [s]")
 
 --
-eta = 1e-4
-bsize = 16
+eta = tonumber(params.l)
+bsize = tonumber(params.b)
+nrounds = tonumber(params.n)
+
 
 for i = 1, nrounds do
 	--
@@ -320,21 +335,6 @@ for i = 1, nrounds do
 
 		--
 		ebest = e
-
-		--
-	elseif elast < e then
-		--
-		if 64==bsize then
-			--
-			eta = eta/2.0
-			--
-			bsize = 16
-		else
-			--
-			bsize = 2*bsize
-		end
-
-		--
 	end
 
 	--
