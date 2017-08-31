@@ -34,6 +34,7 @@ if args.loadpath:
 	print('* loading pretrained weights from ' + args.loadpath)
 	MODEL.load_state_dict(torch.load(args.loadpath))
 if args.dataparallel:
+	print('* using nn.DataParallel')
 	MODEL = torch.nn.DataParallel(MODEL)
 MODEL.cuda()
 
