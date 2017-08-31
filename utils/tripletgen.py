@@ -15,7 +15,10 @@ def generate_triplets(bags):
 	for i in range(0, len(bags)):
 		for j in range(i+1, len(bags)):
 			if bags[i][1] == bags[j][1]: # compare labels
-				for k in range(0, 3):
+				#
+				negbags = []
+				#
+				for k in range(0, 6):
 					#
 					stop = False
 					while not stop:
@@ -23,11 +26,21 @@ def generate_triplets(bags):
 						if bags[i][1] != bags[q][1]:
 							stop = True
 					#
+					negbags.append(bags[q][0])
+				#
+				if False:
 					triplets.append([
 						bags[i][0],
 						bags[j][0],
-						bags[q][0]
+						negbags
 					])
+				else:
+					for negbag in negbags:
+						triplets.append([
+							bags[i][0],
+							bags[j][0],
+							negbag
+						])
 
 	#
 	return triplets

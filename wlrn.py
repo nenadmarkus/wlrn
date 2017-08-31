@@ -45,6 +45,19 @@ def model_forward(triplet):
 		MODEL.forward(triplet[2])
 	]
 
+def select_hard_negatives(triplet):
+	#
+	negs = []
+	for t in triplet[2]:
+		#
+		negs.append(MODEL.forward(torch.autograd.Variable(t.float().cuda(), volatile=True)))
+	negs = torch.cat(negs, 0)
+	#
+	_, inds = torch.max(torch.mm(MODEL.forward(torch.autograd.Variable(triplet[0].float().cuda())), negs.t()), 1)
+	inds = inds.data.long().cpu()
+	#
+	return [triplet[0], triplet[1], torch.cat(triplet[2], 0).index_select(0, inds)]
+
 #
 # loss computation
 #
@@ -71,10 +84,13 @@ def compute_average_loss(triplets):
 
 	for i in range(0, len(triplets)):
 		#
+		triplet = triplets[i]
+		if isinstance(triplet[2], list):
+			triplet = select_hard_negatives(triplet)
 		triplet = [
-			torch.autograd.Variable(triplets[i][0].float().cuda(), volatile=True),
-			torch.autograd.Variable(triplets[i][1].float().cuda(), volatile=True),
-			torch.autograd.Variable(triplets[i][2].float().cuda(), volatile=True)
+			torch.autograd.Variable(triplet[0].float().cuda(), volatile=True),
+			torch.autograd.Variable(triplet[1].float().cuda(), volatile=True),
+			torch.autograd.Variable(triplet[2].float().cuda(), volatile=True)
 		]
 
 		#
@@ -104,10 +120,12 @@ def train_with_sgd(triplets, niters, batchsize, eta):
 		for j in range(0, batchsize):
 			#
 			triplet = triplets[ random.randint(0, len(triplets)-1) ]
+			if isinstance(triplet[2], list):
+				triplet = select_hard_negatives(triplet)
 			triplet = [
-				torch.autograd.Variable(triplet[0]).float().cuda(),
-				torch.autograd.Variable(triplet[1]).float().cuda(),
-				torch.autograd.Variable(triplet[2]).float().cuda()
+				torch.autograd.Variable(triplet[0].float().cuda()),
+				torch.autograd.Variable(triplet[1].float().cuda()),
+				torch.autograd.Variable(triplet[2].float().cuda())
 			]
 			#
 			descs = model_forward(triplet)
@@ -171,7 +189,7 @@ for i in range(0, nrounds):
 	e = compute_average_loss(vtriplets)
 	print("    ** average loss (vld): " + str(e))
 
-	if e<ebest:
+	if e<ebest and args.writepath:
 		#
 		print("* saving model parameters to `" + args.writepath + "`")
 		if args.dataparallel:
