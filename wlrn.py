@@ -20,6 +20,7 @@ parser.add_argument('--writepath', type=str, default=None, help='where to write 
 parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
 parser.add_argument('--learnrate', type=float, default=1e-4, help='RMSprop learning rate')
 parser.add_argument('--batchsize', type=int, default=32, help='batch size')
+parser.add_argument('--dataparallel', action='store_true', default=False, help='wrap the model into a torch.nn.DataParallel module for multi-gpu learning')
 
 args = parser.parse_args()
 
@@ -32,6 +33,8 @@ MODEL = init()
 if args.loadpath:
 	print('* loading pretrained weights from ' + args.loadpath)
 	MODEL.load_state_dict(torch.load(args.loadpath))
+if args.dataparallel:
+	MODEL = torch.nn.DataParallel(MODEL)
 MODEL.cuda()
 
 def model_forward(triplet):
@@ -171,7 +174,10 @@ for i in range(0, nrounds):
 	if e<ebest:
 		#
 		print("* saving model parameters to `" + args.writepath + "`")
-		torch.save(MODEL.state_dict(), args.writepath)
+		if args.dataparallel:
+			torch.save(MODEL.module.state_dict(), args.writepath)
+		else:
+			torch.save(MODEL.state_dict(), args.writepath)
 		#
 		ebest = e
 
