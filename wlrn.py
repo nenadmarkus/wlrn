@@ -81,11 +81,10 @@ def compute_average_loss(triplets):
 	MODEL.eval()
 
 	#
-	avgloss = 0.0
+	totalloss = 0.0
 
-	for i in range(0, len(triplets)):
+	for triplet in triplets:
 		#
-		triplet = triplets[i]
 		if isinstance(triplet[2], list):
 			triplet = select_hard_negatives(triplet)
 		triplet = [
@@ -98,23 +97,23 @@ def compute_average_loss(triplets):
 		descs = model_forward(triplet)
 		loss = loss_forward(descs)
 
-		avgloss = avgloss + loss.data[0]
-
-	avgloss = avgloss/len(triplets)
+		totalloss = totalloss + loss.data[0]
 
 	#
-	return avgloss
+	return totalloss/len(triplets)
 
 #
 #
 #
 
-def train_with_sgd(triplets, niters, batchsize, eta):
+optimizer = torch.optim.RMSprop(MODEL.parameters(), lr=args.learnrate)
+batchsize = args.batchsize
+
+def train_with_sgd(triplets, niters):
 	# switch to train mode
 	MODEL.train()
 
 	#
-	optimizer = torch.optim.RMSprop(MODEL.parameters(), lr=eta)
 	for i in range(0, niters):
 		#
 		optimizer.zero_grad()
@@ -155,17 +154,13 @@ print("* " + str(len(vtriplets)) + " validation triplets generated in " + str(t)
 
 t = time.time()
 ebest = compute_average_loss(vtriplets)
-elast = ebest
 print("* initial validation loss: " + str(ebest))
 
 t = time.time() - t
 print("    ** elapsed time: " + str(t) + " [s]")
 
 #
-eta = args.learnrate
-batchsize = args.batchsize
 nrounds = 128
-
 for i in range(0, nrounds):
 	#
 	print("* ROUND (" + str(1+i) + ")")
@@ -176,11 +171,9 @@ for i in range(0, nrounds):
 	t = time.time() - t
 	print("    ** " + str(len(ttriplets)) + " triplets generated in " + str(t) + " [s]")
 
-	print("    ** eta=" + str(eta) + ", batch size=" + str(batchsize))
-
 	#
 	t = time.time()
-	train_with_sgd(ttriplets, 512, batchsize, eta)
+	train_with_sgd(ttriplets, 512)
 	t = time.time() - t
 
 	print("    ** elapsed time: " + str(t) + " [s]")
@@ -193,15 +186,14 @@ for i in range(0, nrounds):
 	if e<ebest and args.writepath:
 		#
 		print("* saving model parameters to `" + args.writepath + "`")
+		MODEL.cpu()
 		if args.dataparallel:
 			torch.save(MODEL.module.state_dict(), args.writepath)
 		else:
 			torch.save(MODEL.state_dict(), args.writepath)
+		MODEL.cuda()
 		#
 		ebest = e
-
-	#
-	elast = e
 
 	#
 	ttriplets = []

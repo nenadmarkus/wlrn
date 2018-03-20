@@ -37,27 +37,4 @@ for root, dirs, files in os.walk(HPATCHES):
 			shutil.copyfile(src, dst)"
 
 # resize to 32x32 patches
-mogrify -resize 32x  hpatches-trn/*.png
-
-#
-# PREPARE tripletgen.lua
-#
-
-cp ../utils/tripletgen.lua tripletgen-hpatches.lua
-sed -i -e 's/--TRN-FOLDER--/"datasets\/hpatches-trn"/g' tripletgen-hpatches.lua
-sed -i -e 's/--TRN-PROBABILITY--/0.7/g' tripletgen-hpatches.lua
-sed -i -e 's/--VLD-FOLDER--/"datasets\/hpatches-trn"/g' tripletgen-hpatches.lua
-sed -i -e 's/--VLD-PROBABILITY--/0.7/g' tripletgen-hpatches.lua
-
-cp ../utils/tripletgen.py tripletgen-hpatches.py
-sed -i -e 's/--TRN-FOLDER--/"datasets\/hpatches-trn"/g' tripletgen-hpatches.py
-sed -i -e 's/--TRN-PROBABILITY--/0.7/g' tripletgen-hpatches.py
-sed -i -e 's/--VLD-FOLDER--/"datasets\/hpatches-trn"/g' tripletgen-hpatches.py
-sed -i -e 's/--VLD-PROBABILITY--/0.7/g' tripletgen-hpatches.py
-
-#
-#
-#
-
-#th models/descnet256.lua models/descnet256.t7
-#th wlrn.lua models/descnet256.t7 datasets/tripletgen-hpatches.lua -w models/descnet256.t7
+mogrify -resize 32x hpatches-trn/*.png

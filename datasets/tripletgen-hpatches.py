@@ -1,7 +1,7 @@
 #
 import torch
 import os
-import random
+import numpy
 
 import torchvision.transforms as transforms
 
@@ -22,13 +22,14 @@ def generate_triplets(bags):
 					#
 					stop = False
 					while not stop:
-						q = random.randint(0, len(bags)-1)
+						q = numpy.random.randint(0, len(bags)-1)
 						if bags[i][1] != bags[q][1]:
 							stop = True
 					#
 					negbags.append(bags[q][0])
 				#
-				if False:
+				usehardnegs = True
+				if usehardnegs:
 					triplets.append([
 						bags[i][0],
 						bags[j][0],
@@ -53,7 +54,7 @@ def load_keypoint_bags(folder, prob):
 	#
 	for root, dirs, files in os.walk(folder):
 		for f in files:
-			if (f.endswith(".jpg") or f.endswith(".png")) and random.random()<=prob:
+			if (f.endswith(".jpg") or f.endswith(".png")) and numpy.random.random()<=prob:
 				#
 				data = totensor( Image.open(os.path.join(root, f)) ).mul(255).byte()
 				if data.size(0) == 1:
@@ -73,14 +74,14 @@ def load_keypoint_bags(folder, prob):
 
 def get_trn_triplets():
 	#
-	TRN_FOLDER = --TRN-FOLDER--
-	TRN_PROB = --TRN-PROBABILITY--
+	TRN_FOLDER = 'datasets/hpatches-trn'
+	TRN_PROB = 0.7
 	return generate_triplets(load_keypoint_bags(TRN_FOLDER, TRN_PROB))
 
 def get_vld_triplets():
 	#
-	VLD_FOLDER = --VLD-FOLDER--
-	VLD_PROB = --VLD-PROBABILITY--
+	VLD_FOLDER = 'datasets/hpatches-trn'
+	VLD_PROB = 0.7
 	return generate_triplets(load_keypoint_bags(VLD_FOLDER, VLD_PROB))
 
 def init():
