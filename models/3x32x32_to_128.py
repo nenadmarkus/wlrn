@@ -16,8 +16,12 @@ class Net(nn.Module):
 
 	def forward(self, input):
 		#
+		if input.size(1) == 1:
+			# input is grayscale, expand it to 3 channels
+			input = input.expand(input.size(0), 3, input.size(2), input.size(3))
+		#
 		r = input.div(255)
-		r = F.relu(self.conv1(r.view(-1, 3, 32, 32)))
+		r = F.relu(self.conv1(r))
 		r = F.relu(self.conv2(r))
 		r = self.mpool(self.conv3(r))
 		r = self.conv4(r)

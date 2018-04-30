@@ -5,6 +5,9 @@ import numpy
 import cv2
 
 #
+cv2.setNumThreads(0)
+
+#
 def generate_triplets(bags):
 	#
 	triplets = []
@@ -15,7 +18,7 @@ def generate_triplets(bags):
 				#
 				negbags = []
 				#
-				for k in range(0, 6):
+				for k in range(0, 12):
 					#
 					stop = False
 					while not stop:
@@ -69,12 +72,12 @@ def extract_patches(img, keypoints, npix, size):
 #
 def load_keypoint_bags(imgpaths, prob):
 	#
-	orb = cv2.ORB_create(nfeatures=512, patchSize=16)
-	#surf = cv2.xfeatures2d.SURF_create(1024, 4, 2, True, False) # number of features detected per image varies drastically (in our experiments we used binary search over the hess parameter value to obtain the desired number of keypoints <- slow!)
+	orb = cv2.ORB_create(nfeatures=512)
+	sift = cv2.xfeatures2d.SIFT_create(nfeatures=512)
 	def get_keypoints(img):
 		keypoints = []
 		keypoints.extend(orb.detect(img, None))
-		#keypoints.extend(surf.detect(img, None))
+		keypoints.extend(sift.detect(img, None))
 		return [(kp.pt[0], kp.pt[1], kp.size, kp.angle) for kp in keypoints]
 	#
 	bags = []
@@ -105,7 +108,7 @@ def init(folder='datasets/ukbench'):
 				else:
 					trn.append(os.path.join(root, filename))
 	#
-	return (lambda: generate_triplets(load_keypoint_bags(trn, 0.33))), (lambda: generate_triplets(load_keypoint_bags(vld, 1.00)))
+	return (lambda: generate_triplets(load_keypoint_bags(trn, 0.5))), (lambda: generate_triplets(load_keypoint_bags(vld, 1.00)))
 
 #
 '''

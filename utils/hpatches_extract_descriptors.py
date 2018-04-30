@@ -15,6 +15,8 @@ MODEL.load_state_dict( torch.load(sys.argv[2]) )
 MODEL.cuda()
 MODEL.eval()
 
+MODEL = torch.nn.DataParallel(MODEL)
+
 patchsize = int(sys.argv[3])
 
 #
@@ -40,4 +42,3 @@ for root, dirs, files in os.walk(sys.argv[4]):
 			if not os.path.exists(os.path.join(sys.argv[5], seq)):
 				os.makedirs(os.path.join(sys.argv[5], seq))
 			numpy.savetxt(os.path.join(sys.argv[5], seq, f.split('.')[0]+'.csv'), descriptors, delimiter=',')
-			

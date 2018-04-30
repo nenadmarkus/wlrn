@@ -160,7 +160,7 @@ t = time.time() - t
 print("    ** elapsed time: " + str(t) + " [s]")
 
 #
-nrounds = 128
+nrounds = 32
 for i in range(0, nrounds):
 	#
 	print("* ROUND (" + str(1+i) + ")")
