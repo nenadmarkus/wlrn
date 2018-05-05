@@ -57,7 +57,7 @@ The training should finish in a day or two on a modern GPU
 
 ## Pretrained models
 
-You can download some pretrained models from [here](https://drive.google.com/file/d/1RKCNkKaoZUKTw6MdhvBVjAPsU8tV02MB/view?usp=sharing).
+Pretrained models can be downloaded [here](https://drive.google.com/open?id=18ybkdPl-NnAyHLgg0zU-hni__4V7E4XR).
 
 ## License
 
