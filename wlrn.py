@@ -2,7 +2,6 @@
 import torch
 import torch.nn.functional as F
 
-import sys
 import math
 import time
 import random
@@ -48,13 +47,15 @@ def model_forward(triplet):
 
 def select_hard_negatives(triplet):
 	#
+	torch.set_grad_enabled(False)
+	#
 	negs = []
 	for t in triplet[2]:
 		#
-		negs.append(MODEL.forward(torch.autograd.Variable(t.float().cuda(), volatile=True)))
+		negs.append(MODEL.forward(t.float().cuda())
 	negs = torch.cat(negs, 0)
 	#
-	_, inds = torch.max(torch.mm(MODEL.forward(torch.autograd.Variable(triplet[0].float().cuda())), negs.t()), 1)
+	_, inds = torch.max(torch.mm(MODEL.forward(triplet[0].float().cuda()), negs.t()), 1)
 	inds = inds.data.long().cpu()
 	#
 	return [triplet[0], triplet[1], torch.cat(triplet[2], 0).index_select(0, inds)]
@@ -78,6 +79,7 @@ def loss_forward(triplet):
 
 def compute_average_loss(triplets):
 	# switch to evaluation mode
+	torch.set_grad_enabled(False)
 	MODEL.eval()
 
 	#
@@ -88,16 +90,16 @@ def compute_average_loss(triplets):
 		if isinstance(triplet[2], list):
 			triplet = select_hard_negatives(triplet)
 		triplet = [
-			torch.autograd.Variable(triplet[0].float().cuda(), volatile=True),
-			torch.autograd.Variable(triplet[1].float().cuda(), volatile=True),
-			torch.autograd.Variable(triplet[2].float().cuda(), volatile=True)
+			triplet[0].float().cuda(),
+			triplet[1].float().cuda(),
+			triplet[2].float().cuda()
 		]
 
 		#
 		descs = model_forward(triplet)
 		loss = loss_forward(descs)
 
-		totalloss = totalloss + loss.data[0]
+		totalloss = totalloss + loss.item()
 
 	#
 	return totalloss/len(triplets)
@@ -123,11 +125,13 @@ def train_with_sgd(triplets, niters):
 			if isinstance(triplet[2], list):
 				triplet = select_hard_negatives(triplet)
 			triplet = [
-				torch.autograd.Variable(triplet[0].float().cuda()),
-				torch.autograd.Variable(triplet[1].float().cuda()),
-				torch.autograd.Variable(triplet[2].float().cuda())
+				triplet[0].float().cuda(),
+				triplet[1].float().cuda(),
+				triplet[2].float().cuda()
 			]
 			#
+			torch.set_grad_enabled(True)
+
 			descs = model_forward(triplet)
 			loss = loss_forward(descs)
 			loss.div(batchsize)
