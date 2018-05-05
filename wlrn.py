@@ -52,7 +52,7 @@ def select_hard_negatives(triplet):
 	negs = []
 	for t in triplet[2]:
 		#
-		negs.append(MODEL.forward(t.float().cuda())
+		negs.append(MODEL.forward(t.float().cuda()))
 	negs = torch.cat(negs, 0)
 	#
 	_, inds = torch.max(torch.mm(MODEL.forward(triplet[0].float().cuda()), negs.t()), 1)
