@@ -2,22 +2,20 @@
 
 This repo contains the official implementation of the method from the following paper ([arXiv](https://arxiv.org/abs/1603.09095)):
 
-```
-@misc
+```@article
 {
-	wlrn,
+	skar,
 	author = {Nenad Marku\v{s} and Igor S. Pand\v{z}i\'c and J\"{o}rgen Ahlberg},
-	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion}},
-	year = {2016},
-	eprint = {arXiv:1603.09095}
-}
-```
+	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion: Applications to Face Matching, Learning from Unlabeled Videos and 3D-Shape Retrieval}},
+	journal = {IEEE Transactions on Image Processing},
+	year = 2019
+}```
 
-This work was presented at the International Conference on Pattern Recognition in December 2016.
-Some basic information is available [here](INFO.md).
+Link to the official version: <https://doi.org/10.1109/TIP.2018.2867270>.
 
-A newer (updated) version of the paper is available [here](http://hotlab.fer.hr/_download/repository/wlrn.pdf).
-We plan to submit it to a journal at some point.
+Some basic information (abstract) is available [here](INFO.md).
+
+This work expands our previous ICPR2016 paper (<https://doi.org/10.1109/ICPR.2016.7899992>) and introduces novel hard-negative mining strategy which significantly improves the discriminative ability of the learned descriptors.
 
 ## Requirements
 
@@ -67,4 +65,4 @@ MIT.
 
 For any additional information contact me at <nenad.markus@fer.hr>.
 
-Copyright (c) 2016, Nenad Markus. All rights reserved.
+Copyright (c) 2019, Nenad Markus. All rights reserved.
