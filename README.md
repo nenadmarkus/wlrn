@@ -9,7 +9,8 @@ This repo contains the official implementation of the method from the following 
 	title = {{Learning Local Descriptors by Optimizing the Keypoint-Correspondence Criterion: Applications to Face Matching, Learning from Unlabeled Videos and 3D-Shape Retrieval}},
 	journal = {IEEE Transactions on Image Processing},
 	year = 2019
-}```
+}
+```
 
 Link to the official version: <https://doi.org/10.1109/TIP.2018.2867270>.
 
