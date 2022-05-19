@@ -37,10 +37,6 @@ if args.dataparallel:
 	print('* using nn.DataParallel')
 	MODEL = torch.nn.DataParallel(MODEL)
 
-#x = torch.autograd.Variable(torch.randn(2, 1, 128, 192).cuda())
-#y = MODEL.forward(x)
-#print(y.size())
-
 #
 #
 #
@@ -119,9 +115,7 @@ def train_step(batch):
 		if batch[j][0] is None:
 			continue
 		#
-		imgs = torch.autograd.Variable(batch[j].cuda())
-		#
-		featuremaps = MODEL(imgs)
+		featuremaps = MODEL(batch[j].cuda())
 		featuremaps = featuremaps.div(torch.norm(featuremaps + 1e-8, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
 		loss = loss_forward(featuremaps)
 		loss.backward()
