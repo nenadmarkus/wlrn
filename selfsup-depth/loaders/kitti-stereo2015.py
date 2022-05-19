@@ -43,9 +43,10 @@ def get_loader():
 #
 '''
 loader = get_loader()
+print("* npairs: ", len(loader))
 for i, batch in enumerate(loader):
 	print(batch[0].shape, batch[0].dtype)
 	cv2.imwrite('i0.png', batch[0][0].squeeze().mul(255).numpy())
 	cv2.imwrite('i1.png', batch[0][1].squeeze().mul(255).numpy())
 	break
-'''
+#'''
