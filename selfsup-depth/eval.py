@@ -62,9 +62,10 @@ def disparity_to_color(I, max_disp):
 
 def calc_disparity(img0, img1):
 	#
-	batch = torch.autograd.Variable(torch.cat([img0.unsqueeze(0), img1.unsqueeze(0)]).cuda())
+	batch = torch.cat([img0.unsqueeze(0), img1.unsqueeze(0)]).cuda()
 	#
-	featuremaps = MODEL(batch).data
+	with torch.no_grad():
+		featuremaps = MODEL(batch)
 	featuremaps = featuremaps.div(torch.norm(featuremaps, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
 	#
 	end_idx = img0.size(2) - 1
