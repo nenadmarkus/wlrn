@@ -11,6 +11,8 @@ def get_loader():
 	samples = []
 	for root, dirs, filenames in os.walk(os.path.join(ROOT, 'image_2')):
 		for filename in filenames:
+			if any([p in filename for p in ["_08", "_09", "_10", "_11", "_12"]]):
+				continue
 			if filename.endswith('.png'):
 				samples.append((os.path.join(ROOT, 'image_2', filename), os.path.join(ROOT, 'image_3', filename)))
 	#
