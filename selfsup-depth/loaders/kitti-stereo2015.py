@@ -13,6 +13,7 @@ def get_loader():
 		for filename in filenames:
 			# skip some unsuitable images
 			# _10 and _11 are in data_scene_flow.zip / testing/training
+			# "exclude neighboring frames (frame 9-12)" in first paragraph of Section "Experimental Setting", Flow2stereo paper
 			if any([p in filename for p in ["_08", "_09", "_10", "_11", "_12"]]):
 				continue
 			# add pair to list
