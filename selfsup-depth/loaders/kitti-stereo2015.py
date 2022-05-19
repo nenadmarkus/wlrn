@@ -11,8 +11,11 @@ def get_loader():
 	samples = []
 	for root, dirs, filenames in os.walk(os.path.join(ROOT, 'image_2')):
 		for filename in filenames:
+			# skip some unsuitable images
+			# _10 and _11 are in data_scene_flow.zip / testing/training
 			if any([p in filename for p in ["_08", "_09", "_10", "_11", "_12"]]):
 				continue
+			# add pair to list
 			if filename.endswith('.png'):
 				samples.append((os.path.join(ROOT, 'image_2', filename), os.path.join(ROOT, 'image_3', filename)))
 	#
