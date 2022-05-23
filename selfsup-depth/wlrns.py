@@ -133,7 +133,7 @@ for epoch in range(0, 1+4096):
 		print('* batch %d of epoch %d processed in %.4f [s] (average loss: %f)' % (i, epoch, time.time()-start, avgloss))
 	#
 	if args.writepath:
-		os.system('mkdir -p params')
+		os.system('mkdir -p ' + args.writepath)
 		path = args.writepath + '/' + str(epoch) + '.pth'
 		print('* saving model weights to ' + path)
 		if args.dataparallel:
