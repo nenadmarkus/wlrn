@@ -50,8 +50,8 @@ def wlrn_loss_forward(triplet):
 	AP = torch.mm(triplet[0], triplet[1].t()).add(1).mul(0.5)
 	AN = torch.mm(triplet[0], triplet[2].t()).add(1).mul(0.5)
 	# kill all scores below `thr`
-	AP = torch.nn.functional.sigmoid(AP.add(-thr).mul(beta))
-	AN = torch.nn.functional.sigmoid(AN.add(-thr).mul(beta))
+	AP = torch.sigmoid(AP.add(-thr).mul(beta))
+	AN = torch.sigmoid(AN.add(-thr).mul(beta))
 	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
