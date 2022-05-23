@@ -119,7 +119,7 @@ def train_step(batch):
 		featuremaps = featuremaps.div(torch.norm(featuremaps + 1e-8, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
 		loss = loss_forward(featuremaps)
 		loss.backward()
-		avgloss = avgloss + loss.data[0]
+		avgloss = avgloss + loss.item()
 	optimizer.step()
 	avgloss = avgloss/len(batch)
 	#
