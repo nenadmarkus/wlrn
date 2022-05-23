@@ -7,14 +7,14 @@ import torch.utils.data
 #
 def get_loader():
 	#
-	ROOT = '/home/nenad/Desktop/dev/work/fer/kitti2015/training/'
+	ROOT = '/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/'
 	samples = []
 	for root, dirs, filenames in os.walk(os.path.join(ROOT, 'image_2')):
 		for filename in filenames:
 			# skip some unsuitable images
 			# _10 and _11 are in data_scene_flow.zip / testing/training
 			# "exclude neighboring frames (frame 9-12)" in first paragraph of Section "Experimental Setting", Flow2stereo paper
-			if any([p in filename for p in ["_08", "_09", "_10", "_11", "_12"]]):
+			if any([p in filename for p in ["_09", "_10", "_11", "_12"]]):
 				continue
 			# add pair to list
 			if filename.endswith('.png'):
