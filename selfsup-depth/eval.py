@@ -1,9 +1,8 @@
 import torch
-import torch.nn as nn
 import numpy as np
-import importlib
 import time
 import os
+import sys
 import math
 import cv2
 
@@ -147,7 +146,7 @@ for root, dirs, filenames in os.walk(folder+'/image_2/'):
 	for filename in filenames:
 		if True:
 			#
-			p = compute_kitti_result_for_image_pair(folder, filename, show=False)
+			p = compute_kitti_result_for_image_pair(folder, filename, show=True)
 			if p is not None:
 				nimages = nimages + 1
 				pctbadpts = pctbadpts + p
