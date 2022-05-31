@@ -28,10 +28,6 @@ else:
 
 MODEL.cuda()
 
-#
-max_disp = 96
-
-#
 def disparity_to_color(I, max_disp):
     
     _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174], 
@@ -63,12 +59,12 @@ def disparity_to_color(I, max_disp):
     
     return np.reshape(K3, (I.shape[1],I.shape[0],3)).astype(np.float32).T
 
-def calc_disparity(img0, img1):
+def calc_disparity(model, img0, img1, max_disp=96):
 	#
 	batch = torch.cat([img0.unsqueeze(0), img1.unsqueeze(0)]).cuda()
 	#
 	with torch.no_grad():
-		featuremaps = MODEL(batch)
+		featuremaps = model.forward(batch)
 	featuremaps = featuremaps.div(torch.norm(featuremaps, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
 	#
 	end_idx = img0.size(2) - 1
@@ -97,8 +93,7 @@ def calc_disparity(img0, img1):
 	#
 	return disps
 
-#
-def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
+def count_bad_points(disp, disp_calculated, mask, thr, img0=None, max_disp=96):
 	#
 	delta = (disp_calculated.float() - disp.float()).abs()
 	masked = torch.mul(delta, mask)
@@ -120,8 +115,7 @@ def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
 
 	return 1.0 - 1.0*lethr.sum()/mask.sum()
 
-#
-def compute_kitti_result_for_image_pair(folder, name, threshold, show=True):
+def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, threshold, show=True):
 	#
 	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
@@ -130,7 +124,7 @@ def compute_kitti_result_for_image_pair(folder, name, threshold, show=True):
 		return None
 	disp = torch.from_numpy(disp)
 	#
-	disp_calculated = calc_disparity(img0, img1)
+	disp_calculated = _calc_disparity(img0, img1)
 	mask = 1.0 - disp.eq(0).float()
 	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
 	#
@@ -139,15 +133,23 @@ def compute_kitti_result_for_image_pair(folder, name, threshold, show=True):
 	else:
 		return count_bad_points(disp, disp_calculated, mask, threshold, None)
 
-nimages = 0
-pctbadpts = 0
-folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
-for root, dirs, filenames in os.walk(folder+'/image_2/'):
-	for filename in filenames:
-		if True:
-			p = compute_kitti_result_for_image_pair(folder, filename, 2, show=False)
-			if p is not None:
-				nimages = nimages + 1
-				pctbadpts = pctbadpts + p
-#
-print(nimages, 100*pctbadpts/nimages )
+def eval_kitti():
+	def _calc_disparity(img0, img1):
+		return calc_disparity(MODEL, img0, img1)
+
+	threshold = 3
+	nimages = 0
+	pctbadpts = 0
+	folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
+	for root, dirs, filenames in os.walk(folder+'/image_2/'):
+		for filename in filenames:
+			if True:
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, threshold, show=False)
+				if p is not None:
+					nimages = nimages + 1
+					pctbadpts = pctbadpts + p
+
+	print(nimages, 100*pctbadpts/nimages )
+
+if __name__ == "__main__":
+	eval_kitti()
