@@ -32,7 +32,7 @@ def make_model(modeldef, loadpath):
 
 	return model
 
-def disparity_to_color(I, max_disp):
+def _disparity_to_color(I, max_disp):
     
     _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174],
                     [0, 1, 0, 114], [0, 1, 1, 185], [1, 1, 0, 114], [1, 1, 1, 0]]
@@ -63,7 +63,11 @@ def disparity_to_color(I, max_disp):
     
     return np.reshape(K3, (I.shape[1],I.shape[0],3)).astype(np.float32).T
 
-def calc_disparity(model, img0, img1, max_disp=96):
+def disparity_to_color(disp, max_disp):
+	m = _disparity_to_color(disp.numpy(), max_disp)
+	return torch.from_numpy(m).permute(1, 2, 0).float().numpy()
+
+def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
 	#
 	batch = torch.stack((img0, img1)).cuda()
 	#
@@ -84,22 +88,20 @@ def calc_disparity(model, img0, img1, max_disp=96):
 	#
 	_, disps = torch.max(scores, 2)
 	disps = disps.cpu().byte()
-	'''
-	import scipy.signal
-	disps = disps.float().numpy()
-	disps = torch.from_numpy(scipy.signal.medfilt(disps, 11)).byte()
-	#'''
-	'''
-	import sgm.sgm as sgm
-	costs = ( (2.0-scores).mul(2048)).cpu().short()
-	disps = torch.zeros(scores.size(0), scores.size(1)).short()
-	sgm.run(costs, disps)
-	disps = disps.byte()
-	#'''
+	if smoothing == "median":
+		import scipy.signal
+		disps = disps.float().numpy()
+		disps = torch.from_numpy(scipy.signal.medfilt(disps, 11)).byte()
+	elif smoothing == "sgm":
+		import sgm.sgm as sgm
+		costs = ( (2.0-scores).mul(2048)).cpu().short()
+		disps = torch.zeros(scores.size(0), scores.size(1)).short()
+		sgm.run(costs, disps)
+		disps = disps.byte()
 	#
 	return disps
 
-def count_bad_points(disp, disp_calculated, mask, thr, max_disp=96, img0=None):
+def count_bad_points(disp, disp_calculated, mask, thr=2, max_disp=96, img0=None):
 	#
 	delta = (disp_calculated.float() - disp.float()).abs()
 	masked = torch.mul(delta, mask)
@@ -121,23 +123,46 @@ def count_bad_points(disp, disp_calculated, mask, thr, max_disp=96, img0=None):
 
 	return 1.0 - 1.0*lethr.sum()/mask.sum()
 
-def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, threshold, show=True):
+def get_bad_pixels(disp, disp_gt, valid_mask):
+	disp = disp.float()
+	disp_gt = disp_gt.float()
+
+	epe = torch.abs(disp - disp_gt)
+	mag = torch.abs(disp_gt)
+
+	outlier_mask = ((epe >= 3.0) & ((epe/mag) >= 0.05))
+	outlier_mask[ ~valid_mask ] = False
+
+	return outlier_mask
+
+def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True):
 	#
 	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-	disp = cv2.imread(folder+'/disp_noc_0/'+name, cv2.IMREAD_GRAYSCALE)
-	if disp is None:
+
+	disp = os.path.join(folder, 'disp_noc_0', name)
+	if not os.path.exists(disp):
 		return None
-	disp = torch.from_numpy(disp)
+	else:
+		disp = torch.from_numpy(
+			cv2.imread(disp, cv2.IMREAD_GRAYSCALE)
+		).float()
 	#
 	disp_calculated = _calc_disparity(img0, img1)
-	mask = 1.0 - disp.eq(0).float()
-	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
-	#
+
+	valid_mask = disp > 0 # "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
+	outlier_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
+
 	if show:
-		return count_bad_points(disp, disp_calculated, mask, threshold, img0=img0)
-	else:
-		return count_bad_points(disp, disp_calculated, mask, threshold, img0=None)
+		cv2.imshow('img0', img0.squeeze(0).numpy())
+		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp, 95))
+		disp_calculated[ ~valid_mask ] = 0
+		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated, 95))
+		cv2.imshow('outlier mask', (255*outlier_mask.byte()).numpy())
+		if ord('q') == cv2.waitKey(0):
+			sys.exit(0)
+
+	return outlier_mask.sum() / valid_mask.sum()
 
 def eval_kitti():
 	args = parse_args()
@@ -147,18 +172,19 @@ def eval_kitti():
 	def _calc_disparity(img0, img1):
 		return calc_disparity(model, img0, img1)
 
-	threshold = 3
 	nimages = 0
 	pctbadpts = 0
 	folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
+	t = time.time()
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, threshold, show=False)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
 
+	print("* elapsed time: %d [sec]" % int(time.time() - t))
 	print(nimages, 100*pctbadpts/nimages )
 
 if __name__ == "__main__":
