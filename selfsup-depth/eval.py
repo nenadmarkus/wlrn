@@ -99,7 +99,7 @@ def calc_disparity(img0, img1):
 	return disps
 
 #
-def count_bad_points(disp, disp_calculated, mask, img0, thr, show=False):
+def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
 	#
 	delta = (disp_calculated.float() - disp.float()).abs()
 	masked = torch.mul(delta, mask)
@@ -134,7 +134,10 @@ def compute_kitti_result_for_image_pair(folder, name, show=True):
 	mask = 1.0 - disp.eq(0).float()
 	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
 	#
-	return count_bad_points(disp, disp_calculated, mask, img0, 2, show=show)
+	if show:
+		return count_bad_points(disp, disp_calculated, mask, 2, img0)
+	else:
+		return count_bad_points(disp, disp_calculated, mask, 2, None)
 
 '''
 folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
