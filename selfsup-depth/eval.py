@@ -116,7 +116,7 @@ def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
 		cv2.imshow('disp (ground truth, viewed in color)', dicp_color)
 		cv2.imshow('disp (calculated, viewed in color)', disp_calc_color)
 		cv2.imshow('accurately predicted points', lethr.numpy())
-		if ord('q') == cv2.waitKey(0)
+		if ord('q') == cv2.waitKey(0):
 			sys.exit(0)
 
 	return 1.0 - 1.0*lethr.sum()/mask.sum()
