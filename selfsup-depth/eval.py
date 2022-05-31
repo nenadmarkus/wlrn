@@ -145,7 +145,6 @@ folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
 for root, dirs, filenames in os.walk(folder+'/image_2/'):
 	for filename in filenames:
 		if True:
-			#
 			p = compute_kitti_result_for_image_pair(folder, filename, show=True)
 			if p is not None:
 				nimages = nimages + 1
