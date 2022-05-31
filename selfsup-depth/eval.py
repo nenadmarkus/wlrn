@@ -121,7 +121,7 @@ def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
 	return 1.0 - 1.0*lethr.sum()/mask.sum()
 
 #
-def compute_kitti_result_for_image_pair(folder, name, show=True):
+def compute_kitti_result_for_image_pair(folder, name, threshold, show=True):
 	#
 	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
@@ -135,9 +135,9 @@ def compute_kitti_result_for_image_pair(folder, name, show=True):
 	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
 	#
 	if show:
-		return count_bad_points(disp, disp_calculated, mask, 2, img0)
+		return count_bad_points(disp, disp_calculated, mask, threshold, img0)
 	else:
-		return count_bad_points(disp, disp_calculated, mask, 2, None)
+		return count_bad_points(disp, disp_calculated, mask, threshold, None)
 
 nimages = 0
 pctbadpts = 0
@@ -145,7 +145,7 @@ folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
 for root, dirs, filenames in os.walk(folder+'/image_2/'):
 	for filename in filenames:
 		if True:
-			p = compute_kitti_result_for_image_pair(folder, filename, show=True)
+			p = compute_kitti_result_for_image_pair(folder, filename, 2, show=False)
 			if p is not None:
 				nimages = nimages + 1
 				pctbadpts = pctbadpts + p
