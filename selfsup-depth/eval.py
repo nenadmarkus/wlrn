@@ -22,8 +22,12 @@ MODEL = init()
 if args.loadpath:
 	print('* loading pretrained weights from ' + args.loadpath)
 	MODEL.load_state_dict(torch.load(args.loadpath))
+	MODEL.eval()
+else:
+	print("* batchnorm is ON for this model")
+	MODEL.train()
+
 MODEL.cuda()
-MODEL.eval()
 
 #
 max_disp = 96
@@ -117,35 +121,39 @@ def count_bad_points(disp, disp_calculated, mask, img0, thr, show=False):
 	return 1.0 - 1.0*lethr.sum()/mask.sum()
 
 #
-def compute_kitti_result_for_image_pair(folder, name):
+def compute_kitti_result_for_image_pair(folder, name, show=True):
 	#
-	img0 = torch.from_numpy(cv2.imread(folder+'/image_0/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-	img1 = torch.from_numpy(cv2.imread(folder+'/image_1/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-	disp = torch.from_numpy(cv2.imread(folder+'/disp_noc/'+name, cv2.IMREAD_GRAYSCALE))
+	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+	disp = cv2.imread(folder+'/disp_noc_0/'+name, cv2.IMREAD_GRAYSCALE)
+	if disp is None:
+		return None
+	disp = torch.from_numpy(disp)
 	#
 	disp_calculated = calc_disparity(img0, img1)
 	mask = 1.0 - disp.eq(0).float()
 	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
 	#
-	return count_bad_points(disp, disp_calculated, mask, img0, 2, show=True)
+	return count_bad_points(disp, disp_calculated, mask, img0, 2, show=show)
 
-#'''
-folder = 'data/kitti-stereo2012/training/'
+'''
+folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
 imgname = '000000_10.png'
 print( 100*compute_kitti_result_for_image_pair(folder, imgname) )
 #'''
 
-#
-'''
+#'''
 nimages = 0
 pctbadpts = 0
-folder = 'data/kitti-stereo2012/training'
-for root, dirs, filenames in os.walk(folder+'/image_0/'):
+folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
+for root, dirs, filenames in os.walk(folder+'/image_2/'):
 	for filename in filenames:
-		if filename.endswith('_10.png'):
+		if True:
 			#
-			nimages = nimages + 1
-			pctbadpts = pctbadpts + compute_kitti_result_for_image_pair(folder, filename)
+			p = compute_kitti_result_for_image_pair(folder, filename, show=False)
+			if p is not None:
+				nimages = nimages + 1
+				pctbadpts = pctbadpts + p
 #
-print( 100*pctbadpts/nimages )
-'''
+print(nimages, 100*pctbadpts/nimages )
+#'''
