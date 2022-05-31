@@ -6,31 +6,35 @@ import sys
 import math
 import cv2
 
-#
-import argparse
-parser = argparse.ArgumentParser()
+from importlib import import_module
 
-parser.add_argument('modeldef', type=str, help='a script that defines the segmentation network')
-parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
+def parse_args():
+	import argparse
+	parser = argparse.ArgumentParser()
 
-args = parser.parse_args()
+	parser.add_argument('modeldef', type=str, help='a script that defines the segmentation network')
+	parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
 
-#
-exec(open(args.modeldef).read())
-MODEL = init()
-if args.loadpath:
-	print('* loading pretrained weights from ' + args.loadpath)
-	MODEL.load_state_dict(torch.load(args.loadpath))
-	MODEL.eval()
-else:
-	print("* batchnorm is ON for this model")
-	MODEL.train()
+	return parser.parse_args()
 
-MODEL.cuda()
+def make_model(modeldef, loadpath):
+	init = import_module(modeldef).init
+	model = init()
+	if loadpath:
+		print('* loading pretrained weights from ' + loadpath)
+		model.load_state_dict(torch.load(loadpath))
+		model.eval()
+	else:
+		print("* batchnorm is ON for this model")
+		model.train()
+
+	model.cuda()
+
+	return model
 
 def disparity_to_color(I, max_disp):
     
-    _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174], 
+    _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174],
                     [0, 1, 0, 114], [0, 1, 1, 185], [1, 1, 0, 114], [1, 1, 1, 0]]
                    )
     I = np.minimum(I/max_disp, np.ones_like(I))
@@ -61,11 +65,11 @@ def disparity_to_color(I, max_disp):
 
 def calc_disparity(model, img0, img1, max_disp=96):
 	#
-	batch = torch.cat([img0.unsqueeze(0), img1.unsqueeze(0)]).cuda()
+	batch = torch.stack((img0, img1)).cuda()
 	#
 	with torch.no_grad():
 		featuremaps = model.forward(batch)
-	featuremaps = featuremaps.div(torch.norm(featuremaps, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
+		featuremaps = torch.nn.functional.normalize(featuremaps, p=2, dim=1)
 	#
 	end_idx = img0.size(2) - 1
 	scores = torch.zeros(img0.size(1), img0.size(2), max_disp).cuda()
@@ -93,7 +97,7 @@ def calc_disparity(model, img0, img1, max_disp=96):
 	#
 	return disps
 
-def count_bad_points(disp, disp_calculated, mask, thr, img0=None, max_disp=96):
+def count_bad_points(disp, disp_calculated, mask, thr, max_disp=96, img0=None):
 	#
 	delta = (disp_calculated.float() - disp.float()).abs()
 	masked = torch.mul(delta, mask)
@@ -129,13 +133,17 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, threshold
 	disp_calculated = torch.mul(disp_calculated.float(), mask).byte()
 	#
 	if show:
-		return count_bad_points(disp, disp_calculated, mask, threshold, img0)
+		return count_bad_points(disp, disp_calculated, mask, threshold, img0=img0)
 	else:
-		return count_bad_points(disp, disp_calculated, mask, threshold, None)
+		return count_bad_points(disp, disp_calculated, mask, threshold, img0=None)
 
 def eval_kitti():
+	args = parse_args()
+
+	model = make_model(args.modeldef, args.loadpath)
+
 	def _calc_disparity(img0, img1):
-		return calc_disparity(MODEL, img0, img1)
+		return calc_disparity(model, img0, img1)
 
 	threshold = 3
 	nimages = 0
