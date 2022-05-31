@@ -111,7 +111,7 @@ def count_bad_points(disp, disp_calculated, mask, thr, img0=None):
 	dicp_color = disparity_to_color(disp.numpy(), max_disp - 1)
 	dicp_color = torch.from_numpy(dicp_color).permute(1, 2, 0).float().numpy()
 
-	if show:
+	if img0 is not None:
 		cv2.imshow('img0', img0.squeeze(0).numpy())
 		cv2.imshow('disp (ground truth, viewed in color)', dicp_color)
 		cv2.imshow('disp (calculated, viewed in color)', disp_calc_color)
@@ -139,13 +139,6 @@ def compute_kitti_result_for_image_pair(folder, name, show=True):
 	else:
 		return count_bad_points(disp, disp_calculated, mask, 2, None)
 
-'''
-folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
-imgname = '000000_10.png'
-print( 100*compute_kitti_result_for_image_pair(folder, imgname) )
-#'''
-
-#'''
 nimages = 0
 pctbadpts = 0
 folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
@@ -159,4 +152,3 @@ for root, dirs, filenames in os.walk(folder+'/image_2/'):
 				pctbadpts = pctbadpts + p
 #
 print(nimages, 100*pctbadpts/nimages )
-#'''
