@@ -101,28 +101,6 @@ def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
 	#
 	return disps
 
-def count_bad_points(disp, disp_calculated, mask, thr=2, max_disp=96, img0=None):
-	#
-	delta = (disp_calculated.float() - disp.float()).abs()
-	masked = torch.mul(delta, mask)
-	lethr = delta.le(thr).float() - mask.eq(0).float()
-	#
-	disp_calc_color = disparity_to_color(disp_calculated.numpy(), max_disp - 1)
-	disp_calc_color = torch.from_numpy(disp_calc_color).permute(1, 2, 0).float().numpy()
-
-	dicp_color = disparity_to_color(disp.numpy(), max_disp - 1)
-	dicp_color = torch.from_numpy(dicp_color).permute(1, 2, 0).float().numpy()
-
-	if img0 is not None:
-		cv2.imshow('img0', img0.squeeze(0).numpy())
-		cv2.imshow('disp (ground truth, viewed in color)', dicp_color)
-		cv2.imshow('disp (calculated, viewed in color)', disp_calc_color)
-		cv2.imshow('accurately predicted points', lethr.numpy())
-		if ord('q') == cv2.waitKey(0):
-			sys.exit(0)
-
-	return 1.0 - 1.0*lethr.sum()/mask.sum()
-
 def get_bad_pixels(disp, disp_gt, valid_mask):
 	disp = disp.float()
 	disp_gt = disp_gt.float()
