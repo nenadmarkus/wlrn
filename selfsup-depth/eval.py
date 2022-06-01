@@ -118,7 +118,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 
-	disp = os.path.join(folder, 'disp_noc_0', name)
+	disp = os.path.join(folder, 'disp_occ_0', name)
 	if not os.path.exists(disp):
 		return None
 	else:
@@ -148,7 +148,7 @@ def eval_kitti():
 	model = make_model(args.modeldef, args.loadpath)
 
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1)
+		return calc_disparity(model, img0, img1, smoothing="median")
 
 	nimages = 0
 	pctbadpts = 0
@@ -157,7 +157,7 @@ def eval_kitti():
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
 				if p is not None:
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
