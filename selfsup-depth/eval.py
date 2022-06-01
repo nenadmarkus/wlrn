@@ -63,8 +63,8 @@ def _disparity_to_color(I, max_disp=255):
     
     return np.reshape(K3, (I.shape[1],I.shape[0],3)).astype(np.float32).T
 
-def disparity_to_color(disp, max_disp):
-	m = _disparity_to_color(disp.numpy(), max_disp)
+def disparity_to_color(disp, max_disp=255):
+	m = _disparity_to_color(disp.numpy(), max_disp=max_disp)
 	return torch.from_numpy(m).permute(1, 2, 0).float().numpy()
 
 def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
@@ -157,7 +157,7 @@ def eval_kitti():
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
 				if p is not None:
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
