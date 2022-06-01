@@ -32,7 +32,7 @@ def make_model(modeldef, loadpath):
 
 	return model
 
-def _disparity_to_color(I, max_disp):
+def _disparity_to_color(I, max_disp=255):
     
     _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174],
                     [0, 1, 0, 114], [0, 1, 1, 185], [1, 1, 0, 114], [1, 1, 1, 0]]
@@ -133,9 +133,9 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 
 	if show:
 		cv2.imshow('img0', img0.squeeze(0).numpy())
-		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp, 95))
+		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
 		disp_calculated[ ~valid_mask ] = 0
-		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated, 95))
+		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
 		cv2.imshow('outlier mask', (255*outlier_mask.byte()).numpy())
 		if ord('q') == cv2.waitKey(0):
 			sys.exit(0)
