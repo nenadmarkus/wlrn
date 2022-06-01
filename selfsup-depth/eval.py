@@ -157,7 +157,7 @@ def eval_kitti():
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
