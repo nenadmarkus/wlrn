@@ -115,7 +115,7 @@ def export_to_onnx(model, savepath):
 
 def test_1():
 	unet = init()
-	x = torch.randn(2, 3, 512, 1024)
+	x = torch.randn(2, 1, 512, 1024)
 	y = unet.forward(x)
 	print(y.shape)
 	# test backward pass
@@ -123,7 +123,7 @@ def test_1():
 
 def test_2():
 	unet = init()
-	x = torch.randn(1, 3, 512, 1024)
+	x = torch.randn(1, 1, 512, 1024)
 	with torch.no_grad():
 		y = unet.forward(x)
 	import time
@@ -139,5 +139,5 @@ def test_3():
 def init():
 	return UNet(1, 64, wf=64, growthtype="linear")
 
-if __name__ == "__main__":
-	test_3()
+#if __name__ == "__main__":
+#	test_3()
