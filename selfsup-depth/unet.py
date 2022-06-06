@@ -55,7 +55,8 @@ def make_conv3x3_block(inp, otp, stride=1, usebn=True):
 	if usebn:
 		return nn.Sequential(
 			nn.Conv2d(inp, otp, (3, 3), stride=stride, padding=1, bias=False),
-			nn.BatchNorm2d(otp),
+			#nn.BatchNorm2d(otp),
+			nn.GroupNorm(1, otp),
 			nn.Hardtanh(min_val=0, max_val=1)
 		)
 	else:
@@ -99,7 +100,7 @@ def export_to_onnx(model, savepath):
 	dst = "model.onnx"
 	model.eval()
 
-	x = torch.randn(1, 3, 512, 512, requires_grad=True)
+	x = torch.randn(1, 1, 512, 512, requires_grad=True)
 	o = model.forward(x)
 
 	torch.onnx.export(model,  # model being run
