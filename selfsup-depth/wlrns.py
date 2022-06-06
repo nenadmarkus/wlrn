@@ -125,14 +125,14 @@ def train_step(batch):
 	#
 	return avgloss
 
-for epoch in range(0, 1+4096):
+for epoch in range(0, 256):
 	#
 	for i, batch in enumerate(loader):
 		start = time.time()
 		avgloss = train_step(batch)
 		print('* batch %d of epoch %d processed in %.4f [s] (average loss: %f)' % (i, epoch, time.time()-start, avgloss))
 	#
-	if args.writepath:
+	if args.writepath and epoch!=0 and epoch%8:
 		os.system('mkdir -p ' + args.writepath)
 		path = args.writepath + '/' + str(epoch) + '.pth'
 		print('* saving model weights to ' + path)
