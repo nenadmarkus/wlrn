@@ -31,7 +31,7 @@ class UNet(nn.Module):
 			inp = otp
 		self.up = nn.ModuleList(up)
 		#
-		self.outconv = make_conv3x3_block(wf, n_outchn, usebn=False)
+		self.outconv = make_conv3x3_block(wf, n_outchn)
 
 	def forward(self, x):
 		#
