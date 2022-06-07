@@ -56,32 +56,12 @@ def wlrn_loss_forward(triplet):
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 def loss_forward(featuremaps):
-	#
+
 	descs0 = featuremaps[0].permute(1, 2, 0)
 	descs1 = featuremaps[1].permute(1, 2, 0)
-	#
+
 	losslist = []
-	''' v0
-	for i in range(0, 16):
-		#
-		r = numpy.random.randint(0, descs0.size(0))
-		#
-		a = descs0[r]#.div(torch.norm(descs0[r], 2, 1).view(-1, 1).expand(descs0[r].size())) # .div(...) L2 normalizes descriptors
-		p = descs1[r]#.div(torch.norm(descs1[r], 2, 1).view(-1, 1).expand(descs1[r].size()))
-		#
-		n = []
-		for j in range(0, 3):
-			stop = False
-			while not stop:
-				r_neg = numpy.random.randint(0, descs0.size(0))
-				if r_neg != r:
-					stop = True
-			n.append(descs0[r_neg])#.div(torch.norm(descs0[r_neg], 2, 1).view(-1, 1).expand(descs0[r_neg].size())))
-		n = torch.cat(n)
-		#
-		losslist.append( wlrn_loss_forward((a, p, n)) )
-	#'''
-	#''' v1
+
 	for i in range(0, 16):
 		#
 		r = numpy.random.randint(16, descs0.size(0)-16)
@@ -92,8 +72,7 @@ def loss_forward(featuremaps):
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		#
 		losslist.append( wlrn_loss_forward((a, p, n)) )
-	#'''
-	#
+
 	return sum(losslist)/len(losslist)
 
 #
