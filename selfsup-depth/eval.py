@@ -6,32 +6,6 @@ import sys
 import math
 import cv2
 
-from importlib import import_module
-
-def parse_args():
-	import argparse
-	parser = argparse.ArgumentParser()
-
-	parser.add_argument('modeldef', type=str, help='a script that defines the segmentation network')
-	parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
-
-	return parser.parse_args()
-
-def make_model(modeldef, loadpath):
-	init = import_module(modeldef).init
-	model = init()
-	if loadpath:
-		print('* loading pretrained weights from ' + loadpath)
-		model.load_state_dict(torch.load(loadpath))
-		model.eval()
-	else:
-		print("* batchnorm is ON for this model")
-		model.train()
-
-	model.cuda()
-
-	return model
-
 def _disparity_to_color(I, max_disp=255):
     
     _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174],
@@ -159,17 +133,12 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 
 	return ( outlier_mask.sum() / valid_mask.sum() ).item()
 
-def eval_kitti():
-	args = parse_args()
-
-	model = make_model(args.modeldef, args.loadpath)
-
+def eval_kitti2015_train(model, folder='/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'):
 	def _calc_disparity(img0, img1):
 		return calc_disparity(model, img0, img1, smoothing=None)
 
 	nimages = 0
 	pctbadpts = 0
-	folder = '/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'
 	t = time.time()
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
@@ -179,8 +148,42 @@ def eval_kitti():
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
 
-	print("* elapsed time: %d [sec]" % int(time.time() - t))
-	print(nimages, 100*pctbadpts/nimages )
+	print("* elapsed time (eval): %d [sec]" % int(time.time() - t))
+	#print(nimages, 100*pctbadpts/nimages )
+	return 100*pctbadpts/nimages
+
+#
+#
+#
+
+from importlib import import_module
+
+def make_model(modeldef, loadpath):
+	init = import_module(modeldef).init
+	model = init()
+	if loadpath:
+		print('* loading pretrained weights from ' + loadpath)
+		model.load_state_dict(torch.load(loadpath))
+		model.eval()
+	else:
+		print("* batchnorm is ON for this model")
+		model.train()
+
+	model.cuda()
+
+	return model
+
+def parse_args():
+	import argparse
+	parser = argparse.ArgumentParser()
+
+	parser.add_argument('modeldef', type=str, help='a script that defines the segmentation network')
+	parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
+
+	return parser.parse_args()
 
 if __name__ == "__main__":
-	eval_kitti()
+	args = parse_args()
+	model = make_model(args.modeldef, args.loadpath)
+	p = eval_kitti2015_train(model)
+	print("* bad points: %.2f%%" % p)
