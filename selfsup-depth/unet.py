@@ -51,19 +51,13 @@ class UNet(nn.Module):
 #
 #
 
-def make_conv3x3_block(inp, otp, stride=1, usebn=True):
-	if usebn:
-		return nn.Sequential(
-			nn.Conv2d(inp, otp, (3, 3), stride=stride, padding=1, bias=False),
-			#nn.BatchNorm2d(otp),
-			nn.GroupNorm(1, otp),
-			nn.Hardtanh(min_val=0, max_val=1)
-		)
-	else:
-		return nn.Sequential(
-			nn.Conv2d(inp, otp, (3, 3), stride=stride, padding=1, bias=False),
-			nn.Hardtanh(min_val=0, max_val=1)
-		)
+def make_conv3x3_block(inp, otp, stride=1):
+	return nn.Sequential(
+		nn.Conv2d(inp, otp, (3, 3), stride=stride, padding=1, bias=False),
+		#nn.BatchNorm2d(otp),
+		#nn.GroupNorm(1, otp),
+		nn.Hardtanh(min_val=0, max_val=1)
+	)
 
 def make_down_layer(inp, otp):
 	#
@@ -138,7 +132,7 @@ def test_3():
 	export_to_onnx(unet, "unet.onnx")
 
 def init():
-	return UNet(1, 64, wf=64, growthtype="linear")
+	return UNet(1, 32, depth=3, wf=16, growthtype="linear")
 
 #if __name__ == "__main__":
 #	test_3()
