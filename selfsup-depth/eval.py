@@ -67,15 +67,26 @@ def disparity_to_color(disp, max_disp=255):
 	m = _disparity_to_color(disp.numpy(), max_disp=max_disp)
 	return torch.from_numpy(m).permute(1, 2, 0).float().numpy()
 
+def pad_tensor(t, p):
+	b = t.shape[0]
+	c = t.shape[1]
+	h = (1 + t.shape[2]//p)*p
+	w = (1 + t.shape[3]//p)*p
+	_t = torch.zeros((b, c, h, w), dtype=t.dtype).to(t.device)
+	_t[:, :, 0:t.shape[2], 0:t.shape[3]] = t
+	return _t
+
 def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
 	#
-	batch = torch.stack((img0, img1)).cuda()
+	batch = torch.stack((img0, img1))
+	batch = batch.cuda()
+	_batch = pad_tensor(batch, 32)
 	#
 	with torch.no_grad():
-		featuremaps = model.forward(batch)
+		featuremaps = model.forward(_batch)
 		featuremaps = torch.nn.functional.normalize(featuremaps, p=2, dim=1)
-	F0 = featuremaps[0, :, :, :]
-	F1 = featuremaps[1, :, :, :]
+	F0 = featuremaps[0, :, 0:batch.shape[2], 0:batch.shape[3]]
+	F1 = featuremaps[1, :, 0:batch.shape[2], 0:batch.shape[3]]
 	#
 	end_idx = img0.size(2) - 1
 	scores = torch.zeros(img0.size(1), img0.size(2), max_disp).cuda()
@@ -111,7 +122,12 @@ def get_bad_pixels(disp, disp_gt, valid_mask):
 	outlier_mask = ((epe >= 3.0) & ((epe/mag) >= 0.05))
 	outlier_mask[ ~valid_mask ] = False
 
-	return outlier_mask
+	color_mask = torch.zeros((3, disp.shape[0], disp.shape[1]), dtype=torch.uint8)
+	color_mask[1, :, :][valid_mask] = 255
+	color_mask[1, :, :][outlier_mask] = 0
+	color_mask[2, :, :][outlier_mask] = 255
+
+	return outlier_mask, color_mask
 
 def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True):
 	#
@@ -129,18 +145,19 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	disp_calculated = _calc_disparity(img0, img1)
 
 	valid_mask = disp > 0 # "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
-	outlier_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
+	outlier_mask, color_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
 
 	if show:
 		cv2.imshow('img0', img0.squeeze(0).numpy())
 		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
 		disp_calculated[ ~valid_mask ] = 0
 		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
-		cv2.imshow('outlier mask', (255*outlier_mask.byte()).numpy())
+		#cv2.imshow('outlier mask (erroneous pixels are white)', (255*outlier_mask.byte()).numpy())
+		cv2.imshow('error mask (green=OK, red=error, black=no data)', color_mask.permute(1, 2, 0).numpy())
 		if ord('q') == cv2.waitKey(0):
 			sys.exit(0)
 
-	return outlier_mask.sum() / valid_mask.sum()
+	return ( outlier_mask.sum() / valid_mask.sum() ).item()
 
 def eval_kitti():
 	args = parse_args()
@@ -148,7 +165,7 @@ def eval_kitti():
 	model = make_model(args.modeldef, args.loadpath)
 
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1, smoothing="median")
+		return calc_disparity(model, img0, img1, smoothing=None)
 
 	nimages = 0
 	pctbadpts = 0
@@ -157,7 +174,7 @@ def eval_kitti():
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
