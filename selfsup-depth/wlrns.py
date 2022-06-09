@@ -60,7 +60,7 @@ def compute_matrix_entropy_loss(triplet, temp=20):
 	a = triplet[0]
 	p = triplet[1]
 	# similarity and probability matrices
-	S = torch.matmul(a, p.t())
+	S = torch.matmul(a, p.t())**2
 	P = torch.softmax(temp*S, dim=1)
 	#print(P[0].max().item(), P[0].min().item(), P[0].mean().item())
 	# compute the average entropy (per row)
@@ -102,7 +102,7 @@ def loss_forward(featuremaps):
 		#
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		#
-		losslist.append( compute_matrix_entropy_loss_2((a, p, n)) )
+		losslist.append( compute_matrix_entropy_loss((a, p, n)) )
 
 	return sum(losslist)/len(losslist)
 
