@@ -76,7 +76,7 @@ def compute_matrix_entropy_loss_2(triplet, temp=20):
 	p = triplet[1]
 	n = triplet[2]
 	# similarity and probability matrices
-	S = torch.matmul(a, torch.vstack(p, n).t())
+	S = torch.matmul(a, torch.vstack((p, n)).t())
 	P = torch.softmax(temp*S, dim=1)
 	#print(P[0].max().item(), P[0].min().item(), P[0].mean().item())
 	# compute the average entropy (per row)
