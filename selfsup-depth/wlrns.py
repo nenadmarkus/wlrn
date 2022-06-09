@@ -67,7 +67,7 @@ def compute_matrix_entropy_loss(triplet, temp=10):
 	H = - torch.mul(P, torch.log(P))
 	H = H.sum() / a.shape[0]
 	# we want to minimize entropy (i.e., we want the distribution to be spiky)
-	print(H.item())
+	#print(H.item())
 	return H
 
 def loss_forward(featuremaps):
