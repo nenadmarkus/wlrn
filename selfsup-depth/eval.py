@@ -74,15 +74,28 @@ def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
 	_, disps = torch.max(scores, 2)
 	disps = disps.cpu().byte()
 	if smoothing == "median":
-		import scipy.signal
-		disps = disps.float().numpy()
-		disps = torch.from_numpy(scipy.signal.medfilt(disps, 11)).byte()
+		disps = cv2.medianBlur(disps.numpy(), 17)
+		disps = torch.from_numpy(disps).byte()
 	elif smoothing == "sgm":
+		'''
 		import sgm.sgm as sgm
 		costs = ( (2.0-scores).mul(2048)).cpu().short()
 		disps = torch.zeros(scores.size(0), scores.size(1)).short()
 		sgm.run(costs, disps)
 		disps = disps.byte()
+		'''
+		from libSGM import sgm_wrapper
+		cost_volume_in = ( (2.0-scores).mul(2048)).cpu().numpy()
+		direction = np.array([[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1]], dtype=np.int32)
+		p1 = np.zeros(np.shape(cost_volume_in), dtype=cost_volume_in.dtype.type) + 8
+		p2 = np.zeros(np.shape(cost_volume_in), dtype=cost_volume_in.dtype.type) + 32
+		rez = sgm_wrapper.sgm_api(cost_volume_in, p1, p2, direction, -1, np.zeros((cost_volume_in.shape[0], cost_volume_in.shape[1]), dtype=np.float32), False, False)
+		'''
+		print(list(k for k in rez))
+		_, disps = torch.min(rez, 2)
+		'''
+		disps = rez["cv"]
+		print(disps)
 	#
 	return disps
 
@@ -135,7 +148,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 
 def eval_kitti2015_train(model, folder='/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'):
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1, smoothing=None)
+		return calc_disparity(model, img0, img1, smoothing="median")
 
 	nimages = 0
 	pctbadpts = 0
