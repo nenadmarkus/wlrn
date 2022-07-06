@@ -84,18 +84,22 @@ def calc_disparity(model, img0, img1, max_disp=96, smoothing=None):
 		sgm.run(costs, disps)
 		disps = disps.byte()
 		'''
+		'''
 		from libSGM import sgm_wrapper
 		cost_volume_in = ( (2.0-scores).mul(2048)).cpu().numpy()
 		direction = np.array([[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1]], dtype=np.int32)
 		p1 = np.zeros(np.shape(cost_volume_in), dtype=cost_volume_in.dtype.type) + 8
 		p2 = np.zeros(np.shape(cost_volume_in), dtype=cost_volume_in.dtype.type) + 32
 		rez = sgm_wrapper.sgm_api(cost_volume_in, p1, p2, direction, -1, np.zeros((cost_volume_in.shape[0], cost_volume_in.shape[1]), dtype=np.float32), False, False)
-		'''
-		print(list(k for k in rez))
-		_, disps = torch.min(rez, 2)
-		'''
 		disps = rez["cv"]
 		print(disps)
+		'''
+		import sgm
+		dists = 0.5*(1.0 - scores)
+		costvol = (2048*dists).cpu().int().numpy()
+		disps = sgm.run(costvol, max_disp)
+		disps = torch.from_numpy(disps)
+
 	#
 	return disps
 
@@ -158,6 +162,7 @@ def eval_kitti2015_train(model, folder='/home/nenad/Desktop/dev/work/fer/kitti20
 			if True:
 				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
+					print("%s        |        %.3f" % (filename, p))
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
 
