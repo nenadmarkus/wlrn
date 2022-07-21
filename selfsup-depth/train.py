@@ -56,6 +56,8 @@ def compute_triplet_loss(triplet, thr):
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 # left/right features are DxHxW tensors computed with the embeddings model (e.g., MCCNN) from the left and right stereo image, respectively
+# this loss ranges from 1.0 (very bad, initial values) to 0.0 (not possible to achieve in practice)
+# on KITTI, the average loss is around 0.4 or a bit lower when the embedder has been trained
 def loss_forward(left_features, right_features, threshold=0.8):
 	# features dimension as last: DxHxW -> HxWxD
 	descs0 = left_features.permute(1, 2, 0)
