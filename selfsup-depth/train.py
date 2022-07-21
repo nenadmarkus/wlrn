@@ -43,6 +43,9 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 #
 #
 
+# auxiliary function
+# computes the loss for the (anchor, positive, negative) bags of embeddings
+# see <https://arxiv.org/abs/1603.09095> for an explanation
 def compute_triplet_loss(triplet, thr):
 	# this is a parameter of the loss
 	beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
