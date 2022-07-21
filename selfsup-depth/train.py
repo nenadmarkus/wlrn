@@ -43,7 +43,7 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 #
 #
 
-def compute_triplet_loss(triplet, threshold):
+def compute_triplet_loss(triplet, thr):
 	# this is a parameter of the loss
 	beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 	# compute similarities and rescale them to [0, 1]
