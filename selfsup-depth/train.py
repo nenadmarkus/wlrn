@@ -55,19 +55,6 @@ def wlrn_loss_forward(triplet):
 	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
-def compute_matrix_entropy_loss(triplet, temp=20):
-	# use only anchor and positive
-	a = triplet[0]
-	p = triplet[1]
-	# similarity and probability matrices
-	S = torch.matmul(a, p.t())
-	P = torch.softmax(temp*S, dim=1)
-	# compute the average entropy (per row)
-	H = - torch.mul(P, torch.log(P))
-	H = H.sum() / a.shape[0]
-	# we want to minimize entropy (i.e., we want the distribution to be spiky)
-	return H
-
 def loss_forward(featuremaps):
 
 	descs0 = featuremaps[0].permute(1, 2, 0)
@@ -84,7 +71,6 @@ def loss_forward(featuremaps):
 		#
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		#
-		#losslist.append( compute_matrix_entropy_loss((a, p, n))/10 + wlrn_loss_forward((a, p, n)) )
 		losslist.append( wlrn_loss_forward((a, p, n)) )
 
 	return sum(losslist)/len(losslist)
