@@ -37,15 +37,15 @@ if args.dataparallel:
 	print('* using nn.DataParallel')
 	MODEL = torch.nn.DataParallel(MODEL)
 
+print('* WLRN/SKAR threshold set to %f' % args.threshold)
+
 #
 #
 #
 
-print('* wlrn threshold set to %f' % args.threshold)
-thr = args.threshold
-beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
-
-def compute_triplet_loss(triplet):
+def compute_triplet_loss(triplet, threshold):
+	# this is a parameter of the loss
+	beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 	# compute similarities and rescale them to [0, 1]
 	AP = torch.mm(triplet[0], triplet[1].t()).add(1).mul(0.5)
 	AN = torch.mm(triplet[0], triplet[2].t()).add(1).mul(0.5)
@@ -55,7 +55,7 @@ def compute_triplet_loss(triplet):
 	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
-def loss_forward(left_features, right_features):
+def loss_forward(left_features, right_features, threshold=0.8):
 	# features dimension as last: DxHxW -> HxWxD
 	descs0 = left_features.permute(1, 2, 0)
 	descs1 = right_features.permute(1, 2, 0)
@@ -70,7 +70,7 @@ def loss_forward(left_features, right_features):
 		p = descs1[r]
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		# accumulate the loss
-		losslist.append( compute_triplet_loss((a, p, n)) )
+		losslist.append( compute_triplet_loss((a, p, n), threshold) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
@@ -96,7 +96,7 @@ def train_step(batch):
 		#
 		featuremaps = MODEL(batch[j].cuda())
 		featuremaps = torch.nn.functional.normalize(featuremaps, p=2, dim=1) # L2 normalize
-		loss = loss_forward(featuremaps[0], featuremaps[1])
+		loss = loss_forward(featuremaps[0], featuremaps[1], threshold=args.threshold)
 		loss.backward()
 		avgloss = avgloss + loss.item()
 	optimizer.step()
