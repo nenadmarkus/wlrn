@@ -17,7 +17,7 @@ parser.add_argument('dataloader', type=str, help='a script that loads training a
 parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
 parser.add_argument('--writepath', type=str, default=None, help='where to write the learned model weights')
 parser.add_argument('--learnrate', type=float, default=1e-4, help='RMSprop learning rate')
-parser.add_argument('--threshold', type=float, default=0.8, help='WLRN threshold')
+parser.add_argument('--threshold', type=float, default=0.8, help='WLRN/SKAR threshold')
 parser.add_argument('--dataparallel', action='store_true', default=False, help='wrap the model into a torch.nn.DataParallel module for multi-gpu learning')
 
 args = parser.parse_args()
@@ -45,7 +45,7 @@ print('* wlrn threshold set to %f' % args.threshold)
 thr = args.threshold
 beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 
-def wlrn_loss_forward(triplet):
+def compute_triplet_loss(triplet):
 	# compute similarities and rescale them to [0, 1]
 	AP = torch.mm(triplet[0], triplet[1].t()).add(1).mul(0.5)
 	AN = torch.mm(triplet[0], triplet[2].t()).add(1).mul(0.5)
@@ -55,24 +55,24 @@ def wlrn_loss_forward(triplet):
 	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
-def loss_forward(featuremaps):
+def loss_forward(left_features, right_features):
+	# features dimension as last: DxHxW -> HxWxD
+	descs0 = left_features.permute(1, 2, 0)
+	descs1 = right_features.permute(1, 2, 0)
 
-	descs0 = featuremaps[0].permute(1, 2, 0)
-	descs1 = featuremaps[1].permute(1, 2, 0)
-
+	# iterate over 16 lines for this stereo pair (16 is some constant that works well)
 	losslist = []
-
 	for i in range(0, 16):
-		#
-		r = numpy.random.randint(16, descs0.size(0)-16)
-		#
+		# select the image/featres row (in H dimension)
+		r = numpy.random.randint(16, descs0.shape[0]-16)
+		# select anchor, positive and negative sets of embeddings/features
 		a = descs0[r]
 		p = descs1[r]
-		#
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
-		#
-		losslist.append( wlrn_loss_forward((a, p, n)) )
+		# accumulate the loss
+		losslist.append( compute_triplet_loss((a, p, n)) )
 
+	# we're done: average the loss
 	return sum(losslist)/len(losslist)
 
 #
@@ -95,8 +95,8 @@ def train_step(batch):
 			continue
 		#
 		featuremaps = MODEL(batch[j].cuda())
-		featuremaps = featuremaps.div(torch.norm(featuremaps + 1e-8, 2, 1).unsqueeze(1).expand(featuremaps.size())) # L2 normalize
-		loss = loss_forward(featuremaps)
+		featuremaps = torch.nn.functional.normalize(featuremaps, p=2, dim=1) # L2 normalize
+		loss = loss_forward(featuremaps[0], featuremaps[1])
 		loss.backward()
 		avgloss = avgloss + loss.item()
 	optimizer.step()
