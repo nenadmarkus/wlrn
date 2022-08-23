@@ -25,7 +25,7 @@ def get_loader():
         img1 = torch.from_numpy(cv2.imread(samples[index][1], cv2.IMREAD_GRAYSCALE)).unsqueeze(0).unsqueeze(0).float().div(255.0)
         #
         pair = torch.cat([img0, img1])
-        return pair[:, :, 0:352, 0:1216]
+        return pair#[:, :, 0:352, 0:1216]
     #
     nsamples = len(samples)
     class MyDataset(torch.utils.data.Dataset):
@@ -42,7 +42,7 @@ def get_loader():
     return torch.utils.data.DataLoader(MyDataset(load_sample, nsamples), batch_size=4, collate_fn=collate_fn, shuffle=True)
 
 #
-#'''
+'''
 loader = get_loader()
 print("* npairs: ", len(loader))
 for i, batch in enumerate(loader):
