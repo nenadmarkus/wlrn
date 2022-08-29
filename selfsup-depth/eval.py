@@ -162,7 +162,7 @@ def eval_kitti2015_train(model, folder='/home/nenad/Desktop/dev/work/fer/kitti20
 			if True:
 				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
-					print("%s        |        %.3f" % (filename, p))
+					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
 
