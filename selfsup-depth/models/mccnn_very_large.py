@@ -33,7 +33,7 @@ class McCNN(nn.Module):
             SkipConnConvBlock(self.features),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding)
+            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
              nn.ReLU(inplace=True),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding)
         )
