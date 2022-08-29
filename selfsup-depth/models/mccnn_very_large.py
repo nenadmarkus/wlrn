@@ -1,6 +1,16 @@
 import torch
 import torch.nn as nn
 
+class SkipConnConvBlock(nn.Module):
+    def __init__(self, n)
+        self.conv = nn.Sequential(
+            nn.Conv2d(n, n, 3, padding=1),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, x):
+        return self.conv.forward(x) + x
+
 #
 class McCNN(nn.Module):
     def __init__(self, **config):
@@ -13,26 +23,18 @@ class McCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
+            SkipConnConvBlock(self.features),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
-            nn.ReLU(inplace=True),
+            nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding)
+             nn.ReLU(inplace=True),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding)
         )
 
