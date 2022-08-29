@@ -3,6 +3,7 @@ import torch.nn as nn
 
 class SkipConnConvBlock(nn.Module):
     def __init__(self, n):
+        super(SkipConnConvBlock, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(n, n, 3, padding=1),
             nn.ReLU(inplace=True),
