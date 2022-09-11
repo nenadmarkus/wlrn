@@ -5,6 +5,7 @@ import os
 import sys
 import math
 import cv2
+import sys
 
 from eval import calc_disparity, make_model
 
@@ -19,7 +20,7 @@ def writePFM(file, array):
 		array = np.flip(array, axis=0).astype(np.float32)
 		f.write(array.tobytes())
 
-def main():
+def kitti():
 	#
 	model = make_model("models.mccnn_large", "models/mccnn_large-e255.pth")
 	def _calc_disparity(img0, img1):
@@ -57,4 +58,36 @@ def main():
 		#cv2.imshow("...", d)
 		#cv2.waitKey(0)
 
-main()
+def main(args):
+	#
+	model = make_model(args[0], args[1])
+	def _calc_disparity(img0, img1):
+		d = calc_disparity(model, img0, img1, filtering="threshold").float().numpy()
+		d[:, 0:200] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
+		d[0:100, :] = 0 # ignore the sky, trees
+		return d
+	#
+	samples = []
+	for root, dirnames, filenames in os.walk(args[2]):
+		for filename in filenames:
+			if filename.endswith("-l.jpg"):
+				samples.append((
+					os.path.join(root, filename),
+					os.path.join(root, filename).replace("-l.jpg", "-r.jpg")
+				))
+	#
+	for sample in samples:
+		#
+		img0 = torch.from_numpy(cv2.imread(sample[0], cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+		img1 = torch.from_numpy(cv2.imread(sample[1], cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+		#
+		d = _calc_disparity(img0, img1).astype(np.uint8)
+		p = sample[0].replace("-l.jpg", "-d.png")
+		#writePFM(p, d)
+		#print(d.shape, d.dtype, d.max(), d.min())
+		print(p)
+		cv2.imwrite(p, d)
+		#cv2.imshow("...", d)
+		#cv2.waitKey(0)
+
+main(sys.argv[1:])
