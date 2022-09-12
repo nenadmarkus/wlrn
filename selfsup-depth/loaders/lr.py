@@ -33,7 +33,7 @@ def get_load_sample(ROOT='/home/nmarkus/RAFT-Stereo/datasets/LRD'):
 	return load_sample, len(samples)
 
 def get_loader():
-	load_sample, nsampels = get_load_sample()
+	load_sample, nsamples = get_load_sample()
 	class MyDataset(torch.utils.data.Dataset):
 		def __init__(self, load_sample, nsamples):
 			self.load_sample = load_sample
