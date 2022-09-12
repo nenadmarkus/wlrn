@@ -44,7 +44,7 @@ def get_loader():
 			pair = load_sample(index)
 			if pair is None: return None
 			l, r = pair
-			l = torch.from_numpy(l)[:, :, 1].float().div(255.0)
+			l = torch.from_numpy(l)[:, :, 1].unsqueeze(0).unsqueeze(0).float().div(255.0)
 			r = torch.from_numpy(r)[:, :, 1].unsqueeze(0).unsqueeze(0).float().div(255.0)
 			return torch.cat((l, r))
 	def collate_fn(batch):
