@@ -6,6 +6,8 @@ import sys
 import math
 import cv2
 
+usecuda = torch.cuda.is_available()
+
 def _disparity_to_color(I, max_disp=255):
     
     _map = np.array([[0,0, 0, 114], [0, 0, 1, 185], [1, 0, 0, 114], [1, 0, 1, 174],
@@ -53,7 +55,8 @@ def pad_tensor(t, p):
 def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	batch = torch.stack((img0, img1))
-	batch = batch.cuda()
+	if usecuda:
+		batch = batch.cuda()
 	_batch = pad_tensor(batch, 32)
 	#
 	with torch.no_grad():
@@ -63,7 +66,9 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	F1 = featuremaps[1, :, 0:batch.shape[2], 0:batch.shape[3]]
 	#
 	end_idx = img0.size(2) - 1
-	scores = torch.zeros(img0.size(1), img0.size(2), max_disp).cuda()
+	scores = torch.zeros(img0.size(1), img0.size(2), max_disp)
+	if usecuda:
+		scores = scores.cuda()
 	for i in range(0, max_disp):
 		#
 		f0 = F0[:, :, i:end_idx]
@@ -141,7 +146,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	else:
 		return ( outlier_mask.sum() / valid_mask.sum() ).item()
 
-def eval_kitti2015_train(model, folder='/home/nenad/Desktop/dev/work/fer/kitti2015/data_scene_flow/training/'):
+def eval_kitti2015_train(model, folder='datasets/kitti2015/data_scene_flow/training/'):
 	def _calc_disparity(img0, img1):
 		return calc_disparity(model, img0, img1, filtering="threshold")
 
@@ -172,13 +177,14 @@ def make_model(modeldef, loadpath):
 	model = init()
 	if loadpath:
 		print('* loading pretrained weights from ' + loadpath)
-		model.load_state_dict(torch.load(loadpath))
+		model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
 		model.eval()
 	else:
 		print("* batchnorm is ON for this model")
 		model.train()
 
-	model.cuda()
+	if usecuda:
+		model.cuda()
 
 	return model
 
