@@ -132,11 +132,23 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	outlier_mask, color_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
 
 	if show:
-		cv2.imshow('img0', img0.squeeze(0).numpy())
+		cv2.imshow('left', img0.squeeze(0).numpy())
 		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
+		#
+		left = cv2.resize(255*img0.squeeze(0).numpy(), None, fx=0.5, fy=0.5)
+		right = cv2.resize(255*img1.squeeze(0).numpy(), None, fx=0.5, fy=0.5)
+		viz = np.zeros((disp.shape[0]+left.shape[0], disp.shape[1], 3), dtype=np.uint8)
+		viz[:left.shape[0], :left.shape[1], 0] = left
+		viz[:left.shape[0], :left.shape[1], 1] = left
+		viz[:left.shape[0], :left.shape[1], 2] = left
+		viz[:right.shape[0], left.shape[1]:, 0] = right
+		viz[:right.shape[0], left.shape[1]:, 1] = right
+		viz[:right.shape[0], left.shape[1]:, 2] = right
+		viz[right.shape[0]:, :, :] = 255*disparity_to_color(disp)
+		cv2.imwrite("viz.jpg", viz)
+		#
 		disp_calculated[ ~valid_mask ] = 0
 		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
-		#cv2.imshow('outlier mask (erroneous pixels are white)', (255*outlier_mask.byte()).numpy())
 		cv2.imshow('error mask (green=OK, red=error, black=no data)', color_mask.permute(1, 2, 0).numpy())
 		if ord('q') == cv2.waitKey(0):
 			sys.exit(0)
@@ -156,7 +168,7 @@ def eval_kitti2015_train(model, folder='datasets/kitti2015/data_scene_flow/train
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
 				if p is not None:
 					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
