@@ -135,15 +135,11 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		cv2.imshow('left', img0.squeeze(0).numpy())
 		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
 		#
-		left = cv2.resize(255*img0.squeeze(0).numpy(), None, fx=0.5, fy=0.5)
-		right = cv2.resize(255*img1.squeeze(0).numpy(), None, fx=0.5, fy=0.5)
+		left = cv2.resize(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
+		right = cv2.resize(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
 		viz = np.zeros((disp.shape[0]+left.shape[0], disp.shape[1], 3), dtype=np.uint8)
-		viz[:left.shape[0], :left.shape[1], 0] = left
-		viz[:left.shape[0], :left.shape[1], 1] = left
-		viz[:left.shape[0], :left.shape[1], 2] = left
-		viz[:right.shape[0], left.shape[1]:, 0] = right
-		viz[:right.shape[0], left.shape[1]:, 1] = right
-		viz[:right.shape[0], left.shape[1]:, 2] = right
+		viz[:left.shape[0], :left.shape[1], :] = left
+		viz[:right.shape[0], left.shape[1]:, :] = right
 		viz[right.shape[0]:, :, :] = 255*disparity_to_color(disp)
 		cv2.imwrite("viz.jpg", viz)
 		#
