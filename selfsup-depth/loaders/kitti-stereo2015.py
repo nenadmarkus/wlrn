@@ -31,8 +31,8 @@ def get_load_sample(ROOT='/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview
 	#
 	return load_sample, len(samples)
 
-def get_loader():
-	load_sample, nsampels = get_load_sample()
+def get_loader(ROOT="/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/"):
+	load_sample, nsamples = get_load_sample(ROOT=ROOT)
 	class MyDataset(torch.utils.data.Dataset):
 		def __init__(self, load_sample, nsamples):
 			self.load_sample = load_sample
@@ -41,8 +41,8 @@ def get_loader():
 			return nsamples
 		def __getitem__(self, index):
 			l, r = load_sample(index)
-			l = torch.from_numpy(l)[:, :, 1].float().div(255.0)
-			r = torch.from_numpy(r)[:, :, 1].unsqueeze(0).unsqueeze(0).float().div(255.0)
+			l = torch.from_numpy(l).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
+			r = torch.from_numpy(r).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
 			return torch.cat((l, r))
 	def collate_fn(batch):
 		return batch
@@ -51,11 +51,12 @@ def get_loader():
 
 #
 '''
-loader = get_loader()
+import sys
+loader = get_loader(sys.argv[1])
 print("* npairs: ", len(loader))
 for i, batch in enumerate(loader):
 	print(batch[0].shape, batch[0].dtype)
-	cv2.imwrite('i0.png', batch[0][0].squeeze().mul(255).numpy())
-	cv2.imwrite('i1.png', batch[0][1].squeeze().mul(255).numpy())
+	cv2.imwrite('i0.png', batch[0][0].permute(1, 2, 0).mul(255).numpy())
+	cv2.imwrite('i1.png', batch[0][1].permute(1, 2, 0).mul(255).numpy())
 	break
 #'''
