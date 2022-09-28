@@ -2,11 +2,11 @@ import os
 import sys
 import cv2
 
-dir = sys.argv[1]
+dir = sys.argv[2]
 os.mkdir(dir)
 
 exec(open("loaders/kitti-stereo2015.py").read())
-load_sample, n = get_load_sample(sys.argv[2])
+load_sample, n = get_load_sample(sys.argv[1])
 os.mkdir(os.path.join(dir, "kitti2015"))
 for i in range(0, n):
 	l, r = load_sample(i)
