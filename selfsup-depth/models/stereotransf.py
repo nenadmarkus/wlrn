@@ -90,10 +90,23 @@ class StereoModel(nn.Module):
 		features1 = self.selftransf(self.pe(features1))
 		features2 = self.selftransf(self.pe(features2))
 		#
-		features1_ = torch.nn.functional.normalize(self.mixtransf(features2, features1), p=2, dim=-1)
-		features2_ = torch.nn.functional.normalize(self.mixtransf(features1, features2), p=2, dim=-1)
+		#features1_ = self.mixtransf(features2, features1)
+		#features2_ = self.mixtransf(features1, features2)
 		#
-		return features1_.reshape(B, h, W, self.D), features2_.reshape(B, h, W, self.D)
+		return torch.nn.functional.normalize(features1.reshape(B, h, W, self.D), p=2, dim=-1), torch.nn.functional.normalize(features2.reshape(B, h, W, self.D), p=2, dim=-1)
+
+	'''
+	def compute_loss(self, image1, image2, rowinds):
+		B, _, H, W = image1.shape
+		#
+		features1 = self.conv(image1).permute( (0, 2, 3, 1) )
+		features2 = self.conv(image2).permute( (0, 2, 3, 1) )
+		#
+		#
+		A = A.reshape( (-1, W, self.D) )
+		P = P.reshape( (-1, W, self.D) )
+		N = N.reshape( (-1, W, self.D) )
+	'''
 
 #
 #
