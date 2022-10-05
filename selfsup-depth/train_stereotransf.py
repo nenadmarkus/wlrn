@@ -106,6 +106,12 @@ def train_step(batch):
 	#
 	return avgloss
 
+def save_model(name):
+	os.system('mkdir -p ' + args.writepath)
+	path = args.writepath + '/' + name
+	print('* saving model weights to ' + path)
+	torch.save(MODEL.state_dict(), path)
+
 for epoch in range(0, 256):
 	#
 	for i, batch in enumerate(loader):
@@ -113,12 +119,4 @@ for epoch in range(0, 256):
 		avgloss = train_step(batch)
 		print('* batch %d of epoch %d processed in %.4f [s] (average loss: %f)' % (i, epoch, time.time()-start, avgloss))
 	#
-	#if args.writepath and epoch!=0 and 0==epoch%8:
-	if args.writepath and epoch!=0:
-		os.system('mkdir -p ' + args.writepath)
-		path = args.writepath + '/' + str(epoch) + '.pth'
-		print('* saving model weights to ' + path)
-		if args.dataparallel:
-			torch.save(MODEL.module.state_dict(), path)
-		else:
-			torch.save(MODEL.state_dict(), path)
+	if args.writepath and epoch!=0: save_model(str(epoch) + pth)
