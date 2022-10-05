@@ -78,8 +78,8 @@ def main(args):
 	#
 	for sample in samples:
 		#
-		img0 = torch.from_numpy(cv2.imread(sample[0], cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-		img1 = torch.from_numpy(cv2.imread(sample[1], cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+		img0 = torch.from_numpy(cv2.imread(sample[0], cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
+		img1 = torch.from_numpy(cv2.imread(sample[1], cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
 		#
 		d = _calc_disparity(img0, img1).astype(np.uint8)
 		p = sample[0].replace("-l.jpg", "-d.png")

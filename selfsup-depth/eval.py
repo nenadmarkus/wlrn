@@ -182,10 +182,14 @@ from importlib import import_module
 
 def make_model(modeldef, loadpath):
 	init = import_module(modeldef).init
-	model = init()
+	model = init(1)
 	if loadpath:
 		print('* loading pretrained weights from ' + loadpath)
-		model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
+		try:
+			model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
+		except:
+			model = init(3)
+			model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
 		model.eval()
 	else:
 		print("* batchnorm is ON for this model")
