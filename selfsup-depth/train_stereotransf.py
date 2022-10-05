@@ -58,7 +58,7 @@ def compute_triplet_loss(triplet, thr):
 # on KITTI, the average loss is around 0.4 or a bit lower when the embedder has been trained
 def loss_forward(i1, i2, rowinds, threshold=0.8):
 	# compute the features: 1x len(rowinds) xWxD
-	f1, f2 = model.forward(i1.unsqueeze(0), i2.unsqueeze(0), rowinds=rowinds)
+	f1, f2 = MODEL.forward(i1.unsqueeze(0), i2.unsqueeze(0), rowinds=rowinds)
 	f1 = f1[0]
 	f2 = f2[0]
 
