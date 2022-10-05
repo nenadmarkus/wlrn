@@ -64,6 +64,7 @@ def loss_forward(i1, i2, rowinds, threshold=0.8):
 	f2 = f2[0]
 
 	#
+	losslist = []
 	for r in range(0, f1.shape[0]//3):
 		# select anchor, positive and negative sets of embeddings/features
 		a = f1[3*r]
