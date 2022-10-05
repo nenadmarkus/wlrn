@@ -121,5 +121,6 @@ for epoch in range(0, 256):
 		start = time.time()
 		avgloss = train_step(batch)
 		print('* batch %d of epoch %d processed in %.4f [s] (average loss: %f)' % (i, epoch, time.time()-start, avgloss))
+		if i%128==0: save_model("ckpt")
 	#
 	if args.writepath and epoch!=0: save_model(str(epoch) + ".pth")
