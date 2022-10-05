@@ -39,7 +39,7 @@ class McCNN(nn.Module):
 #
 
 class PositionalEncoding(nn.Module):
-	def __init__(self, d_model, dropout=0.0, max_len=1024):
+	def __init__(self, d_model, dropout=0.5, max_len=1024):
 		super(PositionalEncoding, self).__init__()
 		self.dropout = nn.Dropout(p=dropout)
 
@@ -67,7 +67,7 @@ class StereoModel(nn.Module):
 
 		encoder_layer = nn.TransformerEncoderLayer(d_model=D, nhead=4, dim_feedforward=128, batch_first=True)
 		self.selftransf = nn.TransformerEncoder(encoder_layer, num_layers=3)
-		self.pe = nn.Identity()#PositionalEncoding(D)
+		self.pe = PositionalEncoding(D)
 		self.mixtransf = nn.Transformer(d_model=D, nhead=4, num_encoder_layers=3, num_decoder_layers=3, dim_feedforward=128, batch_first=True)
 
 	# image1, image2 are Bx3xHxW tensors
