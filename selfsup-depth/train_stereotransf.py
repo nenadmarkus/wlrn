@@ -90,11 +90,11 @@ def train_step(batch):
 	optimizer.zero_grad()
 	for j in range(0, len(batch)):
 		#
-		i1 = batch[j][0].cuda().unsqueeze(0)
-		i2 = batch[j][1].cuda().unsqueeze(0)
+		i1 = batch[j][0].cuda()
+		i2 = batch[j][1].cuda()
 		rowinds = []
 		for _ in range(0, 8):
-			r = numpy.random.randint(32, i1.shape[2]-8) # randomize row
+			r = numpy.random.randint(32, i1.shape[1]-8) # randomize row
 			rowinds.extend([r, r-3, r+3])
 		loss = loss_forward(i1, i2, rowinds, threshold=args.threshold)
 		loss.backward()
