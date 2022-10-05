@@ -67,7 +67,7 @@ class StereoModel(nn.Module):
 
 		encoder_layer = nn.TransformerEncoderLayer(d_model=D, nhead=4, dim_feedforward=128, batch_first=True)
 		self.selftransf = nn.TransformerEncoder(encoder_layer, num_layers=3)
-		self.pe = PositionalEncoding(D)
+		self.pe = nn.Identity()#PositionalEncoding(D)
 		self.mixtransf = nn.Transformer(d_model=D, nhead=4, num_encoder_layers=3, num_decoder_layers=3, dim_feedforward=128, batch_first=True)
 
 	# image1, image2 are Bx3xHxW tensors
