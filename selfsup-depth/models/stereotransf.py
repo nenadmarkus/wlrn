@@ -39,7 +39,7 @@ class McCNN(nn.Module):
 #
 
 class PositionalEncoding(nn.Module):
-	def __init__(self, d_model, dropout=0.5, max_len=1024):
+	def __init__(self, d_model, dropout=0.0, max_len=1024):
 		super(PositionalEncoding, self).__init__()
 		self.dropout = nn.Dropout(p=dropout)
 
