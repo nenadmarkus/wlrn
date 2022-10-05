@@ -51,6 +51,7 @@ def compute_triplet_loss(triplet, thr):
 	AP = torch.sigmoid(AP.add(-thr).mul(beta))
 	AN = torch.sigmoid(AN.add(-thr).mul(beta))
 	# compute the loss
+	print("		an: %.2f		ap: %.2f" % (torch.sum(torch.max(AN, 1)[0]).item(), torch.sum(torch.max(AP, 1)[0]).item()))
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 # i1/i2 images are 3xHxW tensors
