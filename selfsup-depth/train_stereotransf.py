@@ -119,4 +119,4 @@ for epoch in range(0, 256):
 		avgloss = train_step(batch)
 		print('* batch %d of epoch %d processed in %.4f [s] (average loss: %f)' % (i, epoch, time.time()-start, avgloss))
 	#
-	if args.writepath and epoch!=0: save_model(str(epoch) + pth)
+	if args.writepath and epoch!=0: save_model(str(epoch) + ".pth")
