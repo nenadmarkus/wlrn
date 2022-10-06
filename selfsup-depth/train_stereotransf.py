@@ -62,15 +62,15 @@ def compute_triplet_loss(triplet, thr):
 	AP = torch.sigmoid(AP.add(-thr).mul(beta))
 	AN = torch.sigmoid(AN.add(-thr).mul(beta))
 	# logging
-	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.max(AN, 1)[0]).item(), torch.sum(torch.max(AP, 1)[0]).item()))
-	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.mean(AN, 1)[0]).item(), torch.sum(torch.mean(AP, 1)[0]).item()))
+	#print("  an: %.2f		ap: %.2f" % (torch.sum(torch.max(AN, 1)[0]).item(), torch.sum(torch.max(AP, 1)[0]).item()))
+	#print("  an: %.2f		ap: %.2f" % (torch.sum(torch.mean(AN, 1)[0]).item(), torch.sum(torch.mean(AP, 1)[0]).item()))
 	cv2.imwrite("an.png", (255*AN.detach()).byte().cpu().numpy())
 	cv2.imwrite("ap.png", (255*AP.detach()).byte().cpu().numpy())
 	# compute the loss
 	H = compute_matrix_entropy_loss( torch.mm(triplet[0], triplet[1].t()) )
 	M = (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
-	print("	%f	%f" % (M.detach().item(), H.detach().item()))
-	print("-------------")
+	print(" > M=%.4f, H=%.4f" % (M.detach().item(), H.detach().item()))
+	#print("-------------")
 	return M + H
 
 # i1/i2 images are 3xHxW tensors
