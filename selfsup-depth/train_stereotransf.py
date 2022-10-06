@@ -53,8 +53,8 @@ def compute_triplet_loss(triplet, thr):
 	# logging
 	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.max(AN, 1)[0]).item(), torch.sum(torch.max(AP, 1)[0]).item()))
 	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.mean(AN, 1)[0]).item(), torch.sum(torch.mean(AP, 1)[0]).item()))
-	cv2.imwrite("an.png", AN.detach().cpu().numpy())
-	cv2.imwrite("ap.png", AP.detach().cpu().numpy())
+	cv2.imwrite("an.png", (255*AN.detach()).byte().cpu().numpy())
+	cv2.imwrite("ap.png", (255*AP.detach()).byte().cpu().numpy())
 	print("-------------")
 	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
