@@ -124,7 +124,9 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		).float()
 	#disp[:, 0:200] = 0
 	#
-	disp_calculated = _calc_disparity(img0, img1).cpu().numpy()
+	disp_calculated = _calc_disparity(img0, img1)
+	print(type(disp), type(disp_calculated))
+	sys.exit(0)
 
 	# for gound truth: "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
 	# for predicted: we can doscard some values based on low matching threshold
