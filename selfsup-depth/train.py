@@ -18,7 +18,7 @@ parser.add_argument('--loadpath', type=str, default=None, help='path from which 
 parser.add_argument('--writepath', type=str, default=None, help='where to write the learned model weights')
 parser.add_argument('--learnrate', type=float, default=1e-4, help='RMSprop learning rate')
 parser.add_argument('--threshold', type=float, default=0.8, help='WLRN/SKAR threshold')
-parser.add_argument('--usecolor', action='store_true', default=False, help='color images as input or grayscale')
+parser.add_argument('--usecolor', action='store_true', default=True, help='color images as input or grayscale')
 parser.add_argument('--dataparallel', action='store_true', default=False, help='wrap the model into a torch.nn.DataParallel module for multi-gpu learning')
 
 args = parser.parse_args()
