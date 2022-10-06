@@ -43,6 +43,7 @@ def compute_matrix_entropy_loss(ammpt, temp=20):
 	# similarity and probability matrices
 	S = ammpt
 	P = torch.softmax(temp*S, dim=1)
+	cv2.imwrite("P.png", (255*P.detach()).byte().cpu().numpy())
 	# compute the average entropy (per row)
 	H = - torch.mul(P, torch.log(P))
 	H = H.sum() / S.shape[0]
