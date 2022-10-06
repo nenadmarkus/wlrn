@@ -24,8 +24,8 @@ def get_load_sample(ROOT='/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview
 		if index<0:
 			index = numpy.random.randint(0, len(samples))
 		#
-		l = cv2.imread(samples[index][0], cv2.IMREAD_COLOR)[:(11*32),:1248,:]
-		r = cv2.imread(samples[index][1], cv2.IMREAD_COLOR)[:(11*32),:1248,:]
+		l = cv2.imread(samples[index][0], cv2.IMREAD_COLOR)[:(11*32),:(38*32),:]
+		r = cv2.imread(samples[index][1], cv2.IMREAD_COLOR)[:(11*32),:(38*32),:]
 		#
 		return l, r
 	#
