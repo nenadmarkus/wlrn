@@ -50,10 +50,13 @@ def compute_triplet_loss(triplet, thr):
 	# kill all scores below `thr`
 	AP = torch.sigmoid(AP.add(-thr).mul(beta))
 	AN = torch.sigmoid(AN.add(-thr).mul(beta))
-	# compute the loss
+	# logging
 	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.max(AN, 1)[0]).item(), torch.sum(torch.max(AP, 1)[0]).item()))
 	print("  an: %.2f		ap: %.2f" % (torch.sum(torch.mean(AN, 1)[0]).item(), torch.sum(torch.mean(AP, 1)[0]).item()))
+	cv2.imwrite("an.png", AN.numpy())
+	cv2.imwrite("ap.png", AP.numpy())
 	print("-------------")
+	# compute the loss
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 # i1/i2 images are 3xHxW tensors
