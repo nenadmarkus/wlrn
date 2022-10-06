@@ -7,7 +7,7 @@ import math
 import cv2
 import sys
 
-usecuda = False#torch.cuda.is_available()
+usecuda = torch.cuda.is_available()
 
 def _disparity_to_color(I, max_disp=255):
     
