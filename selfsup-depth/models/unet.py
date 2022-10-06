@@ -131,8 +131,8 @@ def test_3():
 	unet = init()
 	export_to_onnx(unet, "unet.onnx")
 
-def init():
-	return UNet(1, 32, depth=3, wf=16, growthtype="linear")
+def init(n=3):
+	return UNet(n, 32, depth=3, wf=16, growthtype="linear")
 
 #if __name__ == "__main__":
 #	test_3()
