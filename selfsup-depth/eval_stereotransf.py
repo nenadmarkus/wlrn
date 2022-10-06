@@ -117,7 +117,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	disp = os.path.join(folder, 'disp_occ_0', name)
 	if not os.path.exists(disp):
 		#return None
-		disp = np.zeros(img0.shape[0:2], dtype=np.uint8)
+		disp = torch.from_numpy(np.zeros(img0.shape[0:2], dtype=np.uint8)).float()
 	else:
 		disp = torch.from_numpy(
 			cv2.imread(disp, cv2.IMREAD_GRAYSCALE)
@@ -125,8 +125,8 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	#disp[:, 0:200] = 0
 	#
 	disp_calculated = _calc_disparity(img0, img1)
-	print(type(disp), type(disp_calculated))
-	sys.exit(0)
+	#print(type(disp), type(disp_calculated))
+	#sys.exit(0)
 
 	# for gound truth: "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
 	# for predicted: we can doscard some values based on low matching threshold
