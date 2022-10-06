@@ -137,10 +137,11 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		#
 		left = cv2.resize(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
 		right = cv2.resize(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
-		viz = np.zeros((disp.shape[0]+left.shape[0], disp.shape[1], 3), dtype=np.uint8)
+		viz = np.zeros((left.shape[0]+disp.shape[0]+disp_calculated.shape[0], disp.shape[1], 3), dtype=np.uint8)
 		viz[:left.shape[0], :left.shape[1], :] = left
 		viz[:right.shape[0], left.shape[1]:, :] = right
-		viz[right.shape[0]:, :, :] = 255*disparity_to_color(disp)
+		viz[right.shape[0]:(right.shape[0]+disp.shape[0]), :, :] = 255*disparity_to_color(disp)
+		viz[(right.shape[0]+disp.shape[0]):, :, :] = 255*disparity_to_color(disp_calculated)
 		cv2.imwrite("viz.jpg", viz)
 		#
 		disp_calculated[ ~valid_mask ] = 0
