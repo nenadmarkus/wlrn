@@ -60,7 +60,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 		i0, i1 = i0.cuda(), i1.cuda()
 	#
 	with torch.no_grad():
-		F1, F2 = model.forward(i0, i1)
+		F0, F1 = model.forward(i0, i1)
 	F0 = F0[0].permute(2, 0, 1)
 	F1 = F1[0].permute(2, 0, 1)
 	#
