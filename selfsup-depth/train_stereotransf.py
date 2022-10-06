@@ -45,7 +45,7 @@ def compute_matrix_entropy_loss(ammpt, temp=20):
 	P = torch.softmax(temp*S, dim=1)
 	# compute the average entropy (per row)
 	H = - torch.mul(P, torch.log(P))
-	H = H.sum() / a.shape[0]
+	H = H.sum() / S.shape[0]
 	# we want to minimize entropy (i.e., we want the distribution to be spiky)
 	return H
 
