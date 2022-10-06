@@ -155,7 +155,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 
 def eval_kitti2015_train(model, folder):
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1, filtering="threshold")
+		return calc_disparity(model, img0, img1, filtering="median")
 
 	nimages = 0
 	pctbadpts = 0
