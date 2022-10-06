@@ -131,8 +131,8 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	outlier_mask, color_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
 
 	if show:
-		cv2.imshow('left', img0.squeeze(0).numpy())
-		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
+		##cv2.imshow('left', img0.squeeze(0).numpy())
+		##cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
 		#
 		left = cv2.resize(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
 		right = cv2.resize(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
@@ -141,12 +141,13 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		viz[:right.shape[0], left.shape[1]:, :] = right
 		viz[right.shape[0]:, :, :] = 255*disparity_to_color(disp)
 		cv2.imwrite("viz.jpg", viz)
+		sys.exit(0)
 		#
 		disp_calculated[ ~valid_mask ] = 0
-		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
-		cv2.imshow('error mask (green=OK, red=error, black=no data)', color_mask.permute(1, 2, 0).numpy())
-		if ord('q') == cv2.waitKey(0):
-			sys.exit(0)
+		##cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
+		##cv2.imshow('error mask (green=OK, red=error, black=no data)', color_mask.permute(1, 2, 0).numpy())
+		##if ord('q') == cv2.waitKey(0):
+		##	sys.exit(0)
 
 	if valid_mask.sum() == 0:
 		return None
