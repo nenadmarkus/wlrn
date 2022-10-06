@@ -115,12 +115,12 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
 
 	disp = os.path.join(folder, 'disp_occ_0', name)
+	print(disp)
+	sys.exit(0)
 	if not os.path.exists(disp):
 		#return None
 		disp = torch.from_numpy(np.zeros((img0.shape[1], img0.shape[2]), dtype=np.uint8)).float()
 	else:
-		print(disp)
-		sys.exit(0)
 		disp = torch.from_numpy(
 			cv2.imread(disp, cv2.IMREAD_GRAYSCALE)
 		).float()
