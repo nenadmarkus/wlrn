@@ -164,7 +164,7 @@ def eval_kitti2015_train(model, folder):
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
 				if p is not None:
 					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
