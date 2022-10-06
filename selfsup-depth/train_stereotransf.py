@@ -38,6 +38,17 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 #
 #
 
+def compute_matrix_entropy_loss(ammpt, temp=20):
+	# ammpt is anchor*positive.t()
+	# similarity and probability matrices
+	S = ammpt
+	P = torch.softmax(temp*S, dim=1)
+	# compute the average entropy (per row)
+	H = - torch.mul(P, torch.log(P))
+	H = H.sum() / a.shape[0]
+	# we want to minimize entropy (i.e., we want the distribution to be spiky)
+	return H
+
 # auxiliary function
 # computes the loss for the (anchor, positive, negative) bags of embeddings
 # see <https://arxiv.org/abs/1603.09095> for an explanation
@@ -57,6 +68,7 @@ def compute_triplet_loss(triplet, thr):
 	cv2.imwrite("ap.png", (255*AP.detach()).byte().cpu().numpy())
 	print("-------------")
 	# compute the loss
+	H = compute_matrix_entropy_loss( torch.mm(triplet[0], triplet[1].t()) )
 	return (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 
 # i1/i2 images are 3xHxW tensors
