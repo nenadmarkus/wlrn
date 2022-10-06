@@ -61,8 +61,8 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	with torch.no_grad():
 		F1, F2 = model.forward(i0, i1)
-	F0 = featuremaps[0, :, 0:batch.shape[2], 0:batch.shape[3]]
-	F1 = featuremaps[1, :, 0:batch.shape[2], 0:batch.shape[3]]
+	F0 = F0[0].permute(2, 0, 1)
+	F1 = F1[0].permute(2, 0, 1)
 	#
 	end_idx = img0.size(2) - 1
 	scores = torch.zeros(img0.size(1), img0.size(2), max_disp)
