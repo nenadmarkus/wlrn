@@ -35,7 +35,6 @@ class UNet(nn.Module):
 
 	def forward(self, x):
 		#
-		print(x.shape)
 		x = self.inconv(x)
 		#
 		cache = []
