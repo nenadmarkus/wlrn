@@ -24,7 +24,7 @@ args = parser.parse_args()
 #
 #
 
-from models.stereotransf import StereoModel
+from model import StereoModel
 MODEL = StereoModel()
 
 if args.loadpath:
