@@ -96,7 +96,7 @@ def loss_forward(left_features, right_features, threshold=0.8):
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		# accumulate the loss
 		#losslist.append( compute_triplet_loss((a, p, n), threshold) )
-		losslist.append( compute_matrix_entropy_loss( torch.mm(a, p.t()) )
+		losslist.append( compute_matrix_entropy_loss( torch.mm(a, p.t()) ) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
