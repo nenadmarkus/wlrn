@@ -3,11 +3,12 @@ import torch.nn as nn
 
 #
 class McCNN(nn.Module):
-    def __init__(self, **config):
+    def __init__(self, config):
         super(McCNN, self).__init__()
         self.features = config.get('features', 64)
         self.ksize = config.get('ksize', 3)
         self.padding = config.get('padding', 1)
+        self.inpchn = config.get('inpchn', 1)
         self.unaries = nn.Sequential(
             nn.Conv2d(1, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
@@ -22,6 +23,11 @@ class McCNN(nn.Module):
         return self.unaries.forward(image)
 
 #
-def init():
+def init(c=1):
 	#
-	return McCNN()
+	return McCNN({
+	    "inpchn": c,
+	    "features": 64,
+	    "ksize": 3,
+	    "padding": 1
+	})

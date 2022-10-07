@@ -7,6 +7,7 @@ import math
 import cv2
 
 usecuda = torch.cuda.is_available()
+usecolor = False
 
 def _disparity_to_color(I, max_disp=255):
     
@@ -112,8 +113,12 @@ def get_bad_pixels(disp, disp_gt, valid_mask):
 
 def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True):
 	#
-	img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-	img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+	if usecolor:
+		img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
+		img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
+	else:
+		img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+		img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
 
 	disp = os.path.join(folder, 'disp_occ_0', name)
 	if not os.path.exists(disp):
@@ -132,9 +137,6 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	outlier_mask, color_mask = get_bad_pixels(disp_calculated, disp, valid_mask)
 
 	if show:
-		cv2.imshow('left', img0.squeeze(0).numpy())
-		cv2.imshow('disp (ground truth, viewed in color)', disparity_to_color(disp))
-		#
 		left = cv2.resize(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
 		right = cv2.resize(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR), None, fx=0.5, fy=0.5)
 		viz = np.zeros((left.shape[0]+disp.shape[0]+disp_calculated.shape[0], disp.shape[1], 3), dtype=np.uint8)
@@ -142,7 +144,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		viz[:right.shape[0], left.shape[1]:, :] = right
 		viz[right.shape[0]:(right.shape[0]+disp.shape[0]), :, :] = 255*disparity_to_color(disp)
 		viz[(right.shape[0]+disp.shape[0]):, :, :] = 255*disparity_to_color(disp_calculated)
-		cv2.imwrite("viz.jpg", viz)
+		cv2.imshow("viz.jpg", viz)
 		#
 		disp_calculated[ ~valid_mask ] = 0
 		cv2.imshow('disp (calculated, viewed in color)', disparity_to_color(disp_calculated))
@@ -155,9 +157,9 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	else:
 		return ( outlier_mask.sum() / valid_mask.sum() ).item()
 
-def eval_kitti2015_train(model, folder='datasets/kitti2015/data_scene_flow/training/'):
+def eval_kitti2015(model, folder):
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1, filtering="threshold")
+		return calc_disparity(model, img0, img1, filtering="median")
 
 	nimages = 0
 	pctbadpts = 0
@@ -165,7 +167,7 @@ def eval_kitti2015_train(model, folder='datasets/kitti2015/data_scene_flow/train
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=True)
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False)
 				if p is not None:
 					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
@@ -182,15 +184,18 @@ def eval_kitti2015_train(model, folder='datasets/kitti2015/data_scene_flow/train
 from importlib import import_module
 
 def make_model(modeldef, loadpath):
+	global usecolor
 	init = import_module(modeldef).init
 	model = init(1)
 	if loadpath:
 		print('* loading pretrained weights from ' + loadpath)
 		try:
 			model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
+			usecolor = False
 		except:
 			model = init(3)
 			model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
+			usecolor = True
 		model.eval()
 	else:
 		print("* batchnorm is ON for this model")
@@ -207,11 +212,12 @@ def parse_args():
 
 	parser.add_argument('modeldef', type=str, help='a script that defines the segmentation network')
 	parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
+	parser.add_argument('--kittipath', type=str, default="datasets/kitti2015/data_scene_flow/training/", help='path to KITTI data')
 
 	return parser.parse_args()
 
 if __name__ == "__main__":
 	args = parse_args()
 	model = make_model(args.modeldef, args.loadpath)
-	p = eval_kitti2015_train(model)
+	p = eval_kitti2015(model, args.kittipath)
 	print("* bad points: %.2f%%" % p)
