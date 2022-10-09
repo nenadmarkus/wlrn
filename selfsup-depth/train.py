@@ -50,7 +50,7 @@ def compute_matrix_entropy_loss(ammpt, temp=30):
 	# similarity and probability matrices
 	S = ammpt
 	P = torch.softmax(temp*S, dim=1)
-	if numpy.random.random()<0.1: cv2.imwrite("P_.png", (255*P.detach()).byte().cpu().numpy())
+	if numpy.random.random()<0.1: cv2.imwrite("P.png", (255*P.detach()).byte().cpu().numpy())
 	# compute the average entropy (per row)
 	H = - torch.mul(P, torch.log(P))
 	H = H.sum() / S.shape[0]
@@ -101,7 +101,7 @@ def loss_forward(left_features, right_features, threshold=0.8):
 		# accumulate the loss
 		#losslist.append( compute_triplet_loss((a, p, n), threshold) )
 		#losslist.append( (compute_matrix_entropy_loss(torch.mm(a, p.t()))+compute_matrix_entropy_loss(torch.mm(p, a.t())))/2.0 )
-		losslist.append( _loss(triplet, threshold) )
+		losslist.append( _loss((a, p, n), threshold) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
