@@ -16,7 +16,7 @@ parser.add_argument('modeldef', type=str, help='a script that defines the segmen
 parser.add_argument('dataloader', type=str, help='a script that loads training and validation samples')
 parser.add_argument('--loadpath', type=str, default=None, help='path from which to load pretrained weights')
 parser.add_argument('--writepath', type=str, default=None, help='where to write the learned model weights')
-parser.add_argument('--learnrate', type=float, default=1e-4, help='RMSprop learning rate')
+parser.add_argument('--learnrate', type=float, default=1e-5, help='RMSprop learning rate')
 parser.add_argument('--threshold', type=float, default=0.8, help='WLRN/SKAR threshold')
 parser.add_argument('--usecolor', action='store_true', default=False, help='color images as input or grayscale')
 parser.add_argument('--dataparallel', action='store_true', default=False, help='wrap the model into a torch.nn.DataParallel module for multi-gpu learning')
