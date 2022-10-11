@@ -31,7 +31,7 @@ def get_load_sample(ROOT='/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview
 	#
 	return load_sample, len(samples)
 
-def get_loader(ROOT="/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/"):
+def get_loader(usecolor=False, ROOT="/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/"):
 	load_sample, nsamples = get_load_sample(ROOT=ROOT)
 	class MyDataset(torch.utils.data.Dataset):
 		def __init__(self, load_sample, nsamples):
@@ -43,7 +43,13 @@ def get_loader(ROOT="/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/trai
 			l, r = load_sample(index)
 			l = torch.from_numpy(l).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
 			r = torch.from_numpy(r).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
-			return torch.cat((l, r))
+			retval = torch.cat((l, r))
+			if usecolor:
+				return retval
+			else:
+				# take just the green channel
+				retval = retval[:, 1, :, :]
+				return retval.unsqueeze(1).contiguous()
 	def collate_fn(batch):
 		return batch
 	#

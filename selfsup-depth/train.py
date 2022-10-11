@@ -116,7 +116,7 @@ def loss_forward(left_features, right_features, threshold=0.8):
 
 print('* data loader: ' + args.dataloader)
 exec(open(args.dataloader).read())
-loader = get_loader()
+loader = get_loader(usecolor=usecolor)
 
 optimizer = torch.optim.RMSprop(MODEL.parameters(), lr=args.learnrate)
 
