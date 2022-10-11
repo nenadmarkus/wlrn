@@ -61,12 +61,6 @@ def compute_matrix_entropy_loss(ammpt, temp=30):
 	# we want to minimize entropy (i.e., we want the distribution to be spiky)
 	return H
 
-def _loss(triplet, thr):
-	beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
-	AP = torch.mm(triplet[0], triplet[1].t()).add(1).mul(0.5)
-	AP = torch.sigmoid(AP.add(-thr).mul(beta))
-	return ( compute_matrix_entropy_loss(AP) + compute_matrix_entropy_loss(AP.t()) )/2.0
-
 # auxiliary function
 # computes the loss for the (anchor, positive, negative) bags of embeddings
 # see <https://arxiv.org/abs/1603.09095> for an explanation
@@ -103,9 +97,8 @@ def loss_forward(left_features, right_features, threshold=0.8):
 		p = descs1[r]
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		# accumulate the loss
-		#losslist.append( compute_triplet_loss((a, p, n), threshold) )
+		losslist.append( compute_triplet_loss((a, p, n), threshold) )
 		#losslist.append( (compute_matrix_entropy_loss(torch.mm(a, p.t()))+compute_matrix_entropy_loss(torch.mm(p, a.t())))/2.0 )
-		losslist.append( _loss((a, p, n), threshold) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
