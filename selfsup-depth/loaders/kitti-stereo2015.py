@@ -5,7 +5,7 @@ import torch
 import torch.utils.data
 
 #
-def get_load_sample(ROOT='/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/'):
+def get_load_sample(ROOT='./datasets/kitti2015/data_scene_flow_multiview/training/'):
 	#
 	samples = []
 	for root, dirs, filenames in os.walk(os.path.join(ROOT, 'image_2')):
@@ -31,7 +31,7 @@ def get_load_sample(ROOT='/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview
 	#
 	return load_sample, len(samples)
 
-def get_loader(usecolor=False, ROOT="/mnt/sdb1/datasets/kitti2015/data_scene_flow_multiview/training/"):
+def get_loader(usecolor=False, ROOT="./datasets/kitti2015/data_scene_flow_multiview/training/"):
 	load_sample, nsamples = get_load_sample(ROOT=ROOT)
 	class MyDataset(torch.utils.data.Dataset):
 		def __init__(self, load_sample, nsamples):
