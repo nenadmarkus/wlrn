@@ -197,6 +197,7 @@ def make_model(modeldef, loadpath):
 			model.load_state_dict(torch.load(loadpath, map_location=torch.device("cpu")))
 			usecolor = True
 		model.eval()
+		print("* color: " + str(usecolor))
 	else:
 		print("* batchnorm is ON for this model")
 		model.train()

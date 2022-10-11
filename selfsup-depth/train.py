@@ -28,8 +28,12 @@ args = parser.parse_args()
 #
 
 exec(open(args.modeldef).read())
-if args.usecolor: MODEL = init(3)
-else: MODEL = init(1)
+if args.usecolor:
+	MODEL = init(3)
+	print("* input channels: 3")
+else:
+	MODEL = init(1)
+	print("* input channels: 1")
 if args.loadpath:
 	print('* loading pretrained weights from ' + args.loadpath)
 	MODEL.load_state_dict(torch.load(args.loadpath))
