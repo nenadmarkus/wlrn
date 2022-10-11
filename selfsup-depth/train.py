@@ -92,13 +92,18 @@ def loss_forward(left_features, right_features, threshold=0.8):
 	for i in range(0, 16):
 		# select the image/featres row (in H dimension)
 		r = numpy.random.randint(16, descs0.shape[0]-16)
+		'''
 		# select anchor, positive and negative sets of embeddings/features
 		a = descs0[r]
 		p = descs1[r]
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		# accumulate the loss
 		losslist.append( compute_triplet_loss((a, p, n), threshold) )
-		#losslist.append( (compute_matrix_entropy_loss(torch.mm(a, p.t()))+compute_matrix_entropy_loss(torch.mm(p, a.t())))/2.0 )
+		'''
+
+		a = descs0[r]
+		o = torch.cat([desc1[r], descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
+		losslist.append( compute_matrix_entropy_loss(M) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
