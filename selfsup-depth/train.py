@@ -61,6 +61,18 @@ def compute_matrix_entropy_loss(ammpt, temp=2):
 	# we want to minimize entropy (i.e., we want the distribution to be spiky)
 	return H
 
+def compute_maxprob_loss(ammpt, temp=10):
+	# ammpt is anchor*positive.t()
+	# similarity and probability matrices
+	S = ammpt
+	P = torch.softmax(temp*S, dim=1)
+	if numpy.random.random()<0.1: cv2.imwrite("P_maxprobloss.png", (255*P.detach()).byte().cpu().numpy())
+	# extract just the first part of matrix, where the matches lie
+	P = P[:, :P.shape[0]]
+	# we want to maximize the max values == maximize the logarithm of max values == minimize negative logarithm max values
+	M = - torch.log( torch.max(P, dim=1).values )
+	return M.sum() / S.shape[0]
+
 # auxiliary function
 # computes the loss for the (anchor, positive, negative) bags of embeddings
 # see <https://arxiv.org/abs/1603.09095> for an explanation
@@ -104,7 +116,7 @@ def loss_forward(left_features, right_features, threshold=0.8):
 		a = descs0[r]
 		o = torch.cat([descs1[r], descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		M = torch.mm(a, o.t())
-		losslist.append( compute_matrix_entropy_loss(M) )
+		losslist.append( compute_maxprob_loss(M) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
