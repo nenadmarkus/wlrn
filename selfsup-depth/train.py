@@ -49,7 +49,7 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 #
 #
 
-def compute_matrix_entropy_loss(ammpt, temp=2):
+def compute_matrix_entropy_loss(ammpt, temp=20):
 	# ammpt is anchor*positive.t()
 	# similarity and probability matrices
 	S = ammpt
