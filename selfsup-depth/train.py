@@ -61,7 +61,7 @@ def compute_matrix_entropy_loss(ammpt, temp=20):
 	# we want to minimize entropy (i.e., we want the distribution to be spiky)
 	return H
 
-def compute_maxprob_loss(ammpt, temp=10):
+def compute_maxprob_loss(ammpt, temp=20):
 	# ammpt is anchor*positive.t()
 	# similarity and probability matrices
 	S = ammpt
