@@ -49,30 +49,6 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 #
 #
 
-def compute_matrix_entropy_loss(ammpt, temp=20):
-	# ammpt is anchor*positive.t()
-	# similarity and probability matrices
-	S = ammpt
-	P = torch.softmax(temp*S, dim=1)
-	if numpy.random.random()<0.1: cv2.imwrite("P.png", (255*P.detach()).byte().cpu().numpy())
-	# compute the average entropy (per row)
-	H = - torch.mul(P, torch.log(P))
-	H = H.sum() / S.shape[0]
-	# we want to minimize entropy (i.e., we want the distribution to be spiky)
-	return H
-
-def compute_maxprob_loss(ammpt, temp=20):
-	# ammpt is anchor*positive.t()
-	# similarity and probability matrices
-	S = ammpt
-	P = torch.softmax(temp*S, dim=1)
-	if numpy.random.random()<0.1: cv2.imwrite("P_maxprobloss.png", (255*P.detach()).byte().cpu().numpy())
-	# extract just the first part of matrix, where the matches lie
-	P = P[:, :P.shape[0]]
-	# we want to maximize the max values == maximize the logarithm of max values == minimize negative logarithm max values
-	M = - torch.log( torch.max(P, dim=1).values )
-	return M.sum() / S.shape[0]
-
 # auxiliary function
 # computes the loss for the (anchor, positive, negative) bags of embeddings
 # see <https://arxiv.org/abs/1603.09095> for an explanation
@@ -87,8 +63,8 @@ def compute_triplet_loss(triplet, thr):
 	AN = torch.sigmoid(AN.add(-thr).mul(beta))
 	# compute the loss
 	M = (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
-	#cv2.imwrite("an_.png", (255*AN.detach()).byte().cpu().numpy())
-	#cv2.imwrite("ap_.png", (255*AP.detach()).byte().cpu().numpy())
+	#cv2.imwrite("an.png", (255*AN.detach()).byte().cpu().numpy())
+	#cv2.imwrite("ap.png", (255*AP.detach()).byte().cpu().numpy())
 	return M
 
 # left/right features are DxHxW tensors computed with the embeddings model (e.g., MCCNN) from the left and right stereo image, respectively
@@ -104,19 +80,12 @@ def loss_forward(left_features, right_features, threshold=0.8):
 	for i in range(0, 16):
 		# select the image/featres row (in H dimension)
 		r = numpy.random.randint(16, descs0.shape[0]-16)
-		'''
 		# select anchor, positive and negative sets of embeddings/features
 		a = descs0[r]
 		p = descs1[r]
 		n = torch.cat([descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
 		# accumulate the loss
 		losslist.append( compute_triplet_loss((a, p, n), threshold) )
-		'''
-
-		a = descs0[r]
-		o = torch.cat([descs1[r], descs0[r-3], descs0[r+3], descs1[r-3], descs1[r+3]])
-		M = torch.mm(a, o.t())
-		losslist.append( compute_maxprob_loss(M) )
 
 	# we're done: average the loss
 	return sum(losslist)/len(losslist)
@@ -125,6 +94,8 @@ def loss_forward(left_features, right_features, threshold=0.8):
 #
 #
 
+# the loader has to return a list of stereo-pair tensors
+# (each stereo-pair tensor shape is 2xCxHxW)
 print('* data loader: ' + args.dataloader)
 exec(open(args.dataloader).read())
 loader = get_loader(usecolor=args.usecolor)
