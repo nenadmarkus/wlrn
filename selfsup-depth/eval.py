@@ -82,7 +82,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	if filtering == "none":
 		pass
 	elif filtering == "threshold":
-		disps[ sims < 0.75 ] = 0
+		disps[ sims < 0.5 ] = 0
 	elif filtering == "median":
 		disps = cv2.medianBlur(disps.numpy(), 17)
 		disps = torch.from_numpy(disps).byte()
