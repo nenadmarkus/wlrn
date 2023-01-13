@@ -44,9 +44,15 @@ def get_loader(usecolor):
 			pair = load_sample(index)
 			if pair is None: return None
 			l, r = pair
-			l = torch.from_numpy(l)[:, :, 1].unsqueeze(0).unsqueeze(0).float().div(255.0)
-			r = torch.from_numpy(r)[:, :, 1].unsqueeze(0).unsqueeze(0).float().div(255.0)
-			return torch.cat((l, r))
+			l = torch.from_numpy(l).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
+			r = torch.from_numpy(r).permute(2, 0, 1).unsqueeze(0).float().div(255.0)
+			retval = torch.cat((l, r))
+			if usecolor:
+				return retval
+			else:
+				# take just the green channel
+				retval = retval[:, 1, :, :]
+				return retval.unsqueeze(1).contiguous()
 	def collate_fn(batch):
 		batch = [s for s in batch if s is not None]
 		return batch
