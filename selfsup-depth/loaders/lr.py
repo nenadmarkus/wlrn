@@ -32,7 +32,7 @@ def get_load_sample(ROOT='datasets/LRD'):
 	#
 	return load_sample, len(samples)
 
-def get_loader():
+def get_loader(usecolor):
 	load_sample, nsamples = get_load_sample()
 	class MyDataset(torch.utils.data.Dataset):
 		def __init__(self, load_sample, nsamples):
