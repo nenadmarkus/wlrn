@@ -5,7 +5,7 @@ import torch
 import torch.utils.data
 
 #
-def get_load_sample(ROOT='/home/nmarkus/RAFT-Stereo/datasets/LRD'):
+def get_load_sample(ROOT='datasets/LRD'):
 	#
 	samples = []
 	for root, dirs, filenames in os.walk(os.path.join(ROOT)):
