@@ -14,13 +14,13 @@ class SkipConnConvBlock(nn.Module):
 
 #
 class McCNN(nn.Module):
-    def __init__(self, **config):
+    def __init__(self, c, **config):
         super(McCNN, self).__init__()
         self.features = config.get('features', 64)
         self.ksize = config.get('ksize', 3)
         self.padding = config.get('padding', 1)
         self.unaries = nn.Sequential(
-            nn.Conv2d(1, self.features, self.ksize, padding=self.padding),
+            nn.Conv2d(c, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
             nn.Conv2d(self.features, self.features, self.ksize, padding=self.padding),
             nn.ReLU(inplace=True),
@@ -43,6 +43,6 @@ class McCNN(nn.Module):
         return self.unaries.forward(image)
 
 #
-def init():
+def init(c):
 	#
-	return McCNN()
+	return McCNN(c)
