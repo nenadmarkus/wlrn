@@ -27,13 +27,13 @@ def main(args):
 	#
 	model = make_model(args[0], args[1])
 	def _calc_disparity(img0, img1):
-		d = calc_disparity(model, img0, img1, filtering="threshold").float().numpy()
+		d = calc_disparity(model, img0, img1, filtering=args[2]).float().numpy()
 		d[:, 0:100] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
 		d[0:100, :] = 0 # ignore the sky, trees
 		return d
 	#
 	samples = []
-	for root, dirnames, filenames in os.walk(args[2]):
+	for root, dirnames, filenames in os.walk(args[3]):
 		for filename in filenames:
 			if filename.endswith("-l.jpg"):
 				samples.append((
@@ -55,4 +55,8 @@ def main(args):
 		#cv2.imshow("...", d)
 		#cv2.waitKey(0)
 
-main(sys.argv[1:])
+if __name__ == "__main__":
+	if len(sys.argv) != 5:
+		print("* args: <modeldef> <params> <filtering> <lr_folder>")
+	else:
+		main(sys.argv[1:])

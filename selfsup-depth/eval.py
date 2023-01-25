@@ -81,8 +81,9 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	disps = disps.cpu().byte()
 	if filtering == "none":
 		pass
-	elif filtering == "threshold":
-		disps[ sims < 0.5 ] = 0
+	elif "threshold=" in filtering:
+		thr = float(filtering.split("threshold=")[1])
+		disps[ sims < thr ] = 0
 	elif filtering == "median":
 		disps = cv2.medianBlur(disps.numpy(), 17)
 		disps = torch.from_numpy(disps).byte()
@@ -92,6 +93,9 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 		costvol = (2048*dists).cpu().int().numpy()
 		disps = sgm.run(costvol, max_disp)
 		disps = torch.from_numpy(disps)
+	else:
+		print("* invalid filtering parameter")
+		sys.exit()
 
 	#
 	return disps
@@ -177,7 +181,7 @@ def eval_kitti2015(model, folder, filtering, vizdir):
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros=filtering=="threshold")
+				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros="threshold=" in filtering)
 				if p is not None:
 					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
