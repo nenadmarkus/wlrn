@@ -100,6 +100,20 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	return disps
 
+def apply_left_right_consistency(model, img0, img1, threshold, max_disp=96, filtering=None):
+	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering)
+	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
+	#
+	g = torch.arange(0, img0.shape[2]).repeat( (img0.shape[1], 1) ) # g[i, j] = j
+	m = ( g - lr_disp ) > 0
+	i, j = torch.where( m )
+	j_sampling = j - lr_disp[m]
+	j_bw = j_sampling + rl_disp[i, j_sampling]
+	m = torch.abs( j - j_bw ) >= threshold
+	lr_disp[i[m], j[m]] = 0
+	#
+	return lr_disp
+
 def get_bad_pixels(disp, disp_gt, valid_mask):
 	disp = disp.float()
 	disp_gt = disp_gt.float()
@@ -169,25 +183,39 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	if valid_mask.sum() == 0:
 		return None
 	else:
-		return ( outlier_mask.sum() / valid_mask.sum() ).item()
+		return ( outlier_mask.sum() / valid_mask.sum() ).item(), (disp_calculated > 0).sum()
 
-def eval_kitti2015(model, folder, filtering, vizdir):
+def eval_kitti2015(model, folder, lr_consistency, filtering, vizdir):
+	print("* lr_consistency: " + str(lr_consistency))
+	print("* filtering: " + filtering)
+
+	ignore_calc_zeros = ("threshold=" in filtering or lr_consistency)
+	print("* ignore_calc_zeros: " + str(ignore_calc_zeros))
+	print("")
+
 	def _calc_disparity(img0, img1):
-		return calc_disparity(model, img0, img1, filtering=filtering)
+		if not lr_consistency:
+			return calc_disparity(model, img0, img1, filtering=filtering)
+		else:
+			return apply_left_right_consistency(model, img0, img1, 1, filtering=filtering)
 
 	nimages = 0
 	pctbadpts = 0
+	numestpix = 0
 	t = time.time()
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				p = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros="threshold=" in filtering)
-				if p is not None:
+				ret = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros=ignore_calc_zeros)
+				if ret is not None:
+					p, nep = ret
 					print("%s        |        %.1f" % (filename, 100*p))
 					nimages = nimages + 1
 					pctbadpts = pctbadpts + p
+					numestpix = numestpix + nep
 
 	print("* elapsed time (eval): %d [sec]" % int(time.time() - t))
+	print("* number of estimated pixels per image: ~ %d" % int(numestpix/nimages))
 	#print(nimages, 100*pctbadpts/nimages )
 	return 100*pctbadpts/nimages
 
@@ -230,11 +258,13 @@ def parse_args():
 	parser.add_argument('--kittipath', type=str, default="datasets/kitti2015/data_scene_flow/training/", help='path to KITTI data')
 	parser.add_argument('--filtering', type=str, default="median", help='filtering applied to the raw disparity map')
 	parser.add_argument('--vizdir', type=str, default=None, help='directory where to store visualizations')
+	parser.add_argument('--lr_consistency', action="store_true", help='add this flag if you want to add left-right consistency check')
 
 	return parser.parse_args()
 
 if __name__ == "__main__":
 	args = parse_args()
+	print("")
 	model = make_model(args.modeldef, args.loadpath)
-	p = eval_kitti2015(model, args.kittipath, args.filtering, args.vizdir)
+	p = eval_kitti2015(model, args.kittipath, args.lr_consistency, args.filtering, args.vizdir)
 	print("* bad points: %.2f%%" % p)

@@ -7,7 +7,7 @@ import math
 import cv2
 import sys
 
-from eval import calc_disparity, make_model
+from eval import calc_disparity, apply_left_right_consistency, make_model
 
 def writePFM(file, array):
 	import os
@@ -25,11 +25,17 @@ def load_gray_tensor(path):
 
 def main(args):
 	#
+	lr_consistency = True
+	#
 	model = make_model(args[0], args[1])
 	def _calc_disparity(img0, img1):
-		d = calc_disparity(model, img0, img1, filtering=args[2]).float().numpy()
-		d[:, 0:100] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
-		d[0:100, :] = 0 # ignore the sky, trees
+		if not lr_consistency:
+			d = calc_disparity(model, img0, img1, filtering=args[2]).float().numpy()
+			d[:, 0:100] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
+			d[0:100, :] = 0 # ignore the sky, trees
+		else:
+			d = apply_left_right_consistency(model, img0, img1, 1, filtering=args[2]).float().numpy()
+			d[0:50, :] = 0 # ignore the sky, trees
 		return d
 	#
 	samples = []
