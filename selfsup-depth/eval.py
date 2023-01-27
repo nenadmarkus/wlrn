@@ -100,7 +100,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	return disps
 
-def apply_left_right_consistency(model, img0, img1, threshold, max_disp=96, filtering=None):
+def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, max_disp=96, filtering=None):
 	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering)
 	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
 	#
@@ -109,8 +109,12 @@ def apply_left_right_consistency(model, img0, img1, threshold, max_disp=96, filt
 	i, j = torch.where( m )
 	j_sampling = j - lr_disp[m]
 	j_bw = j_sampling + rl_disp[i, j_sampling]
-	m = torch.abs( j - j_bw ) >= threshold
+	m = torch.abs( j - j_bw ) >= lr_consist_thr
 	lr_disp[i[m], j[m]] = 0
+	#
+	if median_consist_thr is not None:
+		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median")
+		lr_disp[ torch.abs(lr_disp-lr_disp_med)>median_consist_thr ] = 0
 	#
 	return lr_disp
 
@@ -197,7 +201,7 @@ def eval_kitti2015(model, folder, lr_consistency, filtering, vizdir):
 		if not lr_consistency:
 			return calc_disparity(model, img0, img1, filtering=filtering)
 		else:
-			return apply_left_right_consistency(model, img0, img1, 1, filtering=filtering)
+			return apply_consistency_filtering(model, img0, img1, 1, 1, filtering=filtering)
 
 	nimages = 0
 	pctbadpts = 0

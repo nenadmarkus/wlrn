@@ -7,7 +7,7 @@ import math
 import cv2
 import sys
 
-from eval import calc_disparity, apply_left_right_consistency, make_model
+from eval import calc_disparity, apply_consistency_filtering, make_model
 
 def writePFM(file, array):
 	import os
@@ -34,7 +34,7 @@ def main(args):
 			d[:, 0:100] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
 			d[0:100, :] = 0 # ignore the sky, trees
 		else:
-			d = apply_left_right_consistency(model, img0, img1, 1, filtering=args[2]).float().numpy()
+			d = apply_consistency_filtering(model, img0, img1, 1, 1, filtering=args[2]).float().numpy()
 			d[0:50, :] = 0 # ignore the sky, trees
 		return d
 	#
