@@ -84,8 +84,12 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	elif "threshold=" in filtering:
 		thr = float(filtering.split("threshold=")[1])
 		disps[ sims < thr ] = 0
-	elif filtering == "median":
-		disps = cv2.medianBlur(disps.numpy(), 17)
+	elif "median" in filtering:
+		if "," not in filtering:
+			ksize=17
+		else:
+			ksize = int(filtering.split(",")[1])
+		disps = cv2.medianBlur(disps.numpy(), ksize)
 		disps = torch.from_numpy(disps).byte()
 	elif filtering == "sgm":
 		import sgm
@@ -113,7 +117,7 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 	lr_disp[i[m], j[m]] = 0
 	#
 	if median_consist_thr is not None:
-		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median")
+		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,35")
 		lr_disp[ torch.abs(lr_disp-lr_disp_med)>median_consist_thr ] = 0
 	#
 	return lr_disp
@@ -189,19 +193,19 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	else:
 		return ( outlier_mask.sum() / valid_mask.sum() ).item(), (disp_calculated > 0).sum()
 
-def eval_kitti2015(model, folder, lr_consistency, filtering, vizdir):
-	print("* lr_consistency: " + str(lr_consistency))
+def eval_kitti2015(model, folder, consistency, filtering, vizdir):
+	print("* consistency checks: " + str(consistency))
 	print("* filtering: " + filtering)
 
-	ignore_calc_zeros = ("threshold=" in filtering or lr_consistency)
+	ignore_calc_zeros = ("threshold=" in filtering or consistency)
 	print("* ignore_calc_zeros: " + str(ignore_calc_zeros))
 	print("")
 
 	def _calc_disparity(img0, img1):
-		if not lr_consistency:
+		if not consistency:
 			return calc_disparity(model, img0, img1, filtering=filtering)
 		else:
-			return apply_consistency_filtering(model, img0, img1, 1, 1, filtering=filtering)
+			return apply_consistency_filtering(model, img0, img1, 1, 0, filtering=filtering)
 
 	nimages = 0
 	pctbadpts = 0
@@ -262,7 +266,7 @@ def parse_args():
 	parser.add_argument('--kittipath', type=str, default="datasets/kitti2015/data_scene_flow/training/", help='path to KITTI data')
 	parser.add_argument('--filtering', type=str, default="median", help='filtering applied to the raw disparity map')
 	parser.add_argument('--vizdir', type=str, default=None, help='directory where to store visualizations')
-	parser.add_argument('--lr_consistency', action="store_true", help='add this flag if you want to add left-right consistency check')
+	parser.add_argument('--consistency', action="store_true", help='add this flag if you want to add left-right consistency and median check')
 
 	return parser.parse_args()
 
@@ -270,5 +274,5 @@ if __name__ == "__main__":
 	args = parse_args()
 	print("")
 	model = make_model(args.modeldef, args.loadpath)
-	p = eval_kitti2015(model, args.kittipath, args.lr_consistency, args.filtering, args.vizdir)
+	p = eval_kitti2015(model, args.kittipath, args.consistency, args.filtering, args.vizdir)
 	print("* bad points: %.2f%%" % p)
