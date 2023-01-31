@@ -78,6 +78,8 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 		scores[:, i:end_idx, i] = torch.sum(torch.mul(f0, f1), 0)
 	#
 	sims, disps = torch.max(scores, 2)
+	probs = torch.nn.functional.softmax(100*scores, dim=-1)
+	disps[ torch.max(probs, 2)[0] < 0.9 ] = 0
 	disps = disps.cpu().byte()
 	if filtering == "none":
 		pass
@@ -117,7 +119,7 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 	lr_disp[i[m], j[m]] = 0
 	#
 	if median_consist_thr is not None:
-		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,35")
+		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,17")
 		lr_disp[ torch.abs(lr_disp-lr_disp_med)>median_consist_thr ] = 0
 	#
 	return lr_disp
