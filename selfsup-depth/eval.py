@@ -60,10 +60,12 @@ STATE = {
 def click_ev(ev, x, y, flags, params):
 	if ev == cv2.EVENT_LBUTTONDOWN:
 		scores = STATE["scores"][y, x].tolist()
+		plt.clf()
 		plt.plot(scores)
 		plt.xlabel('index')
 		plt.ylabel('score')
-		plt.show()
+		#plt.show()
+		plt.savefig("disparities.png")
 def show_disparity_graph(img0, img1, scores):
 	cv2.imshow("right", img1.squeeze().cpu().numpy())
 	cv2.imshow("left", img0.squeeze().cpu().numpy())
