@@ -19,7 +19,7 @@ class McCNN(nn.Module):
         return self.unaries.forward(image)
 
 #
-def init():
+def init(c):
 	#
 	return McCNN({
 	    "inpchn": c,
