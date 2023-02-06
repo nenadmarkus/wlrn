@@ -53,6 +53,28 @@ def pad_tensor(t, p):
 	_t[:, :, 0:t.shape[2], 0:t.shape[3]] = t
 	return _t
 
+import matplotlib.pyplot as plt
+STATE = {
+	"scores": None
+}
+def click_ev(ev, x, y, flags, params):
+	if ev == cv2.EVENT_LBUTTONDOWN:
+		scores = STATE["scores"][y, x].tolist()
+		plt.plot(scores)
+		plt.xlabel('index')
+		plt.ylabel('score')
+		plt.show()
+def show_disparity_graph(img0, img1, scores):
+	cv2.imshow("right", img1.squeeze().cpu().numpy())
+	cv2.imshow("left", img0.squeeze().cpu().numpy())
+	#roi = cv2.selectROI("left", img0.squeeze().cpu().numpy())
+	#x, y = roi[0], roi[1]
+	STATE["scores"] = scores.cpu()
+	cv2.setMouseCallback("left", click_ev)
+	cv2.waitKey(0)
+	cv2.destroyWindow("left")
+	cv2.destroyWindow("right")
+
 def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	batch = torch.stack((img0, img1))
@@ -77,6 +99,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 		#
 		scores[:, i:end_idx, i] = torch.sum(torch.mul(f0, f1), 0)
 	#
+	#show_disparity_graph(img0, img1, scores)
 	sims, disps = torch.max(scores, 2)
 	disps = disps.cpu().byte()
 	if filtering == "none":
