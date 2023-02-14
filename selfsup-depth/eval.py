@@ -59,11 +59,12 @@ STATE = {
 }
 def click_ev(ev, x, y, flags, params):
 	if ev == cv2.EVENT_LBUTTONDOWN:
-		scores = STATE["scores"][y, x].tolist()
+		scores = torch.nn.functional.softmax(10*STATE["scores"][y, x]).tolist()
 		plt.clf()
 		plt.plot(scores)
-		plt.xlabel('index')
-		plt.ylabel('score')
+		plt.xlabel("index")
+		plt.ylabel("score")
+		plt.ylim([0, 1])
 		#plt.show()
 		plt.savefig("disparities.png")
 def show_disparity_graph(img0, img1, scores):
@@ -77,7 +78,7 @@ def show_disparity_graph(img0, img1, scores):
 	cv2.destroyWindow("left")
 	cv2.destroyWindow("right")
 
-def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
+def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponclick=False):
 	#
 	batch = torch.stack((img0, img1))
 	if usecuda:
@@ -101,7 +102,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 		#
 		scores[:, i:end_idx, i] = torch.sum(torch.mul(f0, f1), 0)
 	#
-	#show_disparity_graph(img0, img1, scores)
+	if showdisponclick: show_disparity_graph(img0, img1, scores)
 	sims, disps = torch.max(scores, 2)
 	disps = disps.cpu().byte()
 	if filtering == "none":
@@ -116,6 +117,15 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 			ksize = int(filtering.split(",")[1])
 		disps = cv2.medianBlur(disps.numpy(), ksize)
 		disps = torch.from_numpy(disps).byte()
+	elif "softmax" in filtering:
+		if "," not in filtering:
+			e, p = 5, 0.5
+		else:
+			e, p = float(filtering.split(",")[1]), float(filtering.split(",")[2])
+		sm = torch.nn.functional.softmax(e*scores, dim=2)
+		probs, disps = torch.max(scores, 2)
+		disps[probs < p] = 0
+		disps = disps.cpu()
 	elif filtering == "sgm":
 		import sgm
 		dists = 0.5*(1.0 - scores)
@@ -129,8 +139,8 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None):
 	#
 	return disps
 
-def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, max_disp=96, filtering=None):
-	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering)
+def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, softmax_consist, max_disp=96, filtering=None):
+	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering, showdisponclick=False)
 	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
 	#
 	g = torch.arange(0, img0.shape[2]).repeat( (img0.shape[1], 1) ) # g[i, j] = j
@@ -138,12 +148,16 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 	i, j = torch.where( m )
 	j_sampling = j - lr_disp[m]
 	j_bw = j_sampling + rl_disp[i, j_sampling]
-	m = torch.abs( j - j_bw ) >= lr_consist_thr
+	m = torch.abs( j - j_bw ) > lr_consist_thr
 	lr_disp[i[m], j[m]] = 0
 	#
 	if median_consist_thr is not None:
 		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,35")
 		lr_disp[ torch.abs(lr_disp-lr_disp_med)>median_consist_thr ] = 0
+	#
+	if softmax_consist is not None:
+		smax_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=softmax_consist)
+		lr_disp[ torch.abs(lr_disp-smax_disp_med)>0 ] = 0
 	#
 	return lr_disp
 
@@ -230,7 +244,7 @@ def eval_kitti2015(model, folder, consistency, filtering, vizdir):
 		if not consistency:
 			return calc_disparity(model, img0, img1, filtering=filtering)
 		else:
-			return apply_consistency_filtering(model, img0, img1, 1, 0, filtering=filtering)
+			return apply_consistency_filtering(model, img0, img1, 0, 0, None, filtering=filtering)
 
 	nimages = 0
 	pctbadpts = 0
