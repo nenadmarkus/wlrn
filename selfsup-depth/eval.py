@@ -139,7 +139,14 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 	#
 	return disps
 
-def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, softmax_consist, max_disp=96, filtering=None):
+def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, softmax_consist, max_disp=96, filtering=None, erode_filt=False, up2x=True):
+	#
+	if up2x:
+		initshape = (img0.shape[1], img1.shape[2])
+		img0 = torch.from_numpy(cv2.resize(img0.squeeze().numpy(), None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)).unsqueeze(0)
+		img1 = torch.from_numpy(cv2.resize(img1.squeeze().numpy(), None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)).unsqueeze(0)
+		max_disp = 2*max_disp
+	#
 	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering, showdisponclick=False)
 	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
 	#
@@ -159,6 +166,12 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 		smax_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=softmax_consist)
 		lr_disp[ torch.abs(lr_disp-smax_disp_med)>0 ] = 0
 	#
+	if erode_filt:
+		lr_disp = torch.from_numpy(cv2.erode(lr_disp.numpy(), np.ones((2, 2), np.uint8)))
+	#
+	if up2x:
+		lr_disp = torch.div(torch.from_numpy(cv2.resize(lr_disp.numpy(), initshape[::-1], interpolation=cv2.INTER_NEAREST)), 2, rounding_mode='floor')
+	# we're done
 	return lr_disp
 
 def get_bad_pixels(disp, disp_gt, valid_mask):
@@ -230,7 +243,7 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	if valid_mask.sum() == 0:
 		return None
 	else:
-		return ( outlier_mask.sum() / valid_mask.sum() ).item(), (disp_calculated > 0).sum()
+		return ( outlier_mask.sum() / valid_mask.sum() ).item(), (disp_calculated > 0).sum().item()
 
 def eval_kitti2015(model, folder, consistency, filtering, vizdir):
 	print("* consistency checks: " + str(consistency))
