@@ -146,6 +146,8 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 		img0 = torch.from_numpy(cv2.resize(img0.squeeze().numpy(), None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)).unsqueeze(0)
 		img1 = torch.from_numpy(cv2.resize(img1.squeeze().numpy(), None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)).unsqueeze(0)
 		max_disp = 2*max_disp
+		if lr_consist_thr == 0: lr_consist_thr=1
+		else: lr_consist_thr *= 2
 	#
 	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering, showdisponclick=False)
 	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
@@ -159,7 +161,10 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 	lr_disp[i[m], j[m]] = 0
 	#
 	if median_consist_thr is not None:
-		lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,35")
+		if up2x:
+			lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,51")
+		else:
+			lr_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering="median,35")
 		lr_disp[ torch.abs(lr_disp-lr_disp_med)>median_consist_thr ] = 0
 	#
 	if softmax_consist is not None:
