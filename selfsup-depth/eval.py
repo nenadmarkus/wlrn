@@ -117,6 +117,13 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 			ksize = int(filtering.split(",")[1])
 		disps = cv2.medianBlur(disps.numpy(), ksize)
 		disps = torch.from_numpy(disps).byte()
+	elif "bilateral" in filtering:
+		if "," not in filtering:
+			a, b, c = 9, 75, 75
+		else:
+			a, b, c = int(filtering.split(",")[1]), float(filtering.split(",")[2]), float(filtering.split(",")[3])
+		disps = cv2.bilateralFilter(disps.numpy(), a, b, c)
+		disps = torch.from_numpy(disps).byte()
 	elif "softmax" in filtering:
 		if "," not in filtering:
 			e, p = 5, 0.5
