@@ -182,7 +182,7 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 		lr_disp = torch.from_numpy(cv2.erode(lr_disp.numpy(), np.ones((2, 2), np.uint8)))
 	#
 	if up2x:
-		lr_disp = torch.div(torch.from_numpy(cv2.resize(lr_disp.numpy(), initshape[::-1], interpolation=cv2.INTER_NEAREST)), 2, rounding_mode='floor')
+		lr_disp = torch.from_numpy(cv2.resize(lr_disp.numpy(), initshape[::-1], interpolation=cv2.INTER_NEAREST)).float() / 2.0
 	# we're done
 	return lr_disp
 
