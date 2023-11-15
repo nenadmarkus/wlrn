@@ -52,15 +52,15 @@ print('* WLRN/SKAR threshold set to %f' % args.threshold)
 # auxiliary function
 # computes the loss for the (anchor, positive, negative) bags of embeddings
 # see <https://arxiv.org/abs/1603.09095> for an explanation
-def compute_triplet_loss(triplet, thr):
+def compute_triplet_loss(triplet, thr, temp=0.05):
 	# this is a parameter of the loss
 	beta = -math.log(1.0/0.99 - 1)/(1.0-thr)
 	# compute similarities and rescale them to [0, 1]
 	AP = torch.mm(triplet[0], triplet[1].t()).add(1).mul(0.5)
 	AN = torch.mm(triplet[0], triplet[2].t()).add(1).mul(0.5)
 	# kill all scores below `thr`
-	AP = torch.sigmoid(AP.add(-thr).mul(beta))
-	AN = torch.sigmoid(AN.add(-thr).mul(beta))
+	AP = torch.softmax(AP/temp, dim=0) * torch.softmax(AP/temp, dim=1) * torch.sigmoid(AP.add(-thr).mul(beta))
+	AN = torch.softmax(AN/temp, dim=0) * torch.softmax(AN/temp, dim=1) * torch.sigmoid(AN.add(-thr).mul(beta))
 	# compute the loss
 	M = (1 + torch.sum(torch.max(AN, 1)[0]))/(1 + torch.sum(torch.max(AP, 1)[0]))
 	#cv2.imwrite("an.png", (255*AN.detach()).byte().cpu().numpy())
