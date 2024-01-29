@@ -117,6 +117,14 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 			ksize = int(filtering.split(",")[1])
 		disps = cv2.medianBlur(disps.numpy(), ksize)
 		disps = torch.from_numpy(disps).byte()
+	elif "erode" in filtering:
+		if "," not in filtering:
+			kernel =7
+		else:
+			kernel = int(filtering.split(",")[1])
+		kernel = np.ones((kernel, kernel), dtype=np.uint8)
+		disps = cv2.erode(disps.numpy(), kernel)
+		disps = torch.from_numpy(disps).byte()
 	elif "bilateral" in filtering:
 		if "," not in filtering:
 			a, b, c = 9, 75, 75
