@@ -6,6 +6,7 @@ import sys
 import math
 import cv2
 import sys
+from PIL import Image
 
 from eval import calc_disparity, apply_consistency_filtering, make_model
 
@@ -54,12 +55,16 @@ def main(args):
 		#
 		d = _calc_disparity(img0, img1).astype(np.uint8)
 		p = sample[0].replace("-l.jpg", "-d.png")
-		#writePFM(p, d)
-		#print(d.shape, d.dtype, d.max(), d.min())
+
 		print(p)
-		cv2.imwrite(p, d)
-		#cv2.imshow("...", d)
-		#cv2.waitKey(0)
+
+		disp = 256.0*d
+		disp[ disp > 2**16-1 ] = 0
+		disp = disp.astype(np.uint16)
+		buff = disp.tobytes()
+		img = Image.new("I", disp.T.shape)
+		img.frombytes(buff, 'raw', "I;16")
+		img.save(p)
 
 if __name__ == "__main__":
 	if len(sys.argv) != 5:
