@@ -193,14 +193,54 @@ def get_bad_pixels(disp, disp_gt, valid_mask):
 
 	return outlier_mask, color_mask
 
-def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True, vizdir="vizdir", ignore_calc_zeros=False):
+def apply_census(inp):
+    if type(inp) == str:
+        src_bytes = cv2.imread(inp)
+    else:
+        src_bytes = inp
+
+    h, w = src_bytes.shape[0], src_bytes.shape[1]
+    #print("image size: %d x %d = %d" % (w, h, w * h))
+
+    if len(src_bytes.shape) == 3:
+        src_bytes = src_bytes[:, :, 1]
+
+    #Initialize output array
+    census = np.zeros((h-2, w-2), dtype="uint8")
+
+    #centre pixels, which are offset by (1, 1)
+    cp = src_bytes[1:h-1, 1:w-1]
+
+    #offsets of non-central pixels 
+    offsets = [(u, v) for v in range(3) for u in range(3) if not u == 1 == v]
+
+    #Do the pixel comparisons
+    for u,v in offsets:
+        census = (census << 1) | (src_bytes[v:v+h-2, u:u+w-2] >= cp)
+
+    _tmp = np.zeros((h, w), dtype="uint8")
+    _tmp[1:(h-1), 1:(w-1)] = census
+    census = _tmp
+
+    #cv2.imshow("census", census)
+    #cv2.waitKey(0)
+
+    return census
+
+def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True, vizdir="vizdir", ignore_calc_zeros=False, use_census=False):
 	#
 	if usecolor:
+		if use_census:
+			raise Exception("Not implemented")
 		img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
 		img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_COLOR)).permute(2, 0, 1).float().div(255.0)
 	else:
-		img0 = torch.from_numpy(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
-		img1 = torch.from_numpy(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE)).unsqueeze(0).float().div(255.0)
+		if use_census:
+			apply = apply_census
+		else:
+			apply = lambda x: x
+		img0 = torch.from_numpy(apply(cv2.imread(folder+'/image_2/'+name, cv2.IMREAD_GRAYSCALE))).unsqueeze(0).float().div(255.0)
+		img1 = torch.from_numpy(apply(cv2.imread(folder+'/image_3/'+name, cv2.IMREAD_GRAYSCALE))).unsqueeze(0).float().div(255.0)
 
 	disp = os.path.join(folder, 'disp_occ_0', name)
 	if not os.path.exists(disp):
@@ -247,12 +287,13 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	else:
 		return ( outlier_mask.sum() / valid_mask.sum() ).item(), (disp_calculated > 0).sum()
 
-def eval_kitti2015(model, folder, consistency, filtering, vizdir):
+def eval_kitti2015(model, folder, consistency, filtering, vizdir, census):
 	print("* consistency checks: " + str(consistency))
 	print("* filtering: " + filtering)
 
 	ignore_calc_zeros = ("threshold=" in filtering or consistency)
 	print("* ignore_calc_zeros: " + str(ignore_calc_zeros))
+	print("* census: ", census)
 	print("")
 
 	def _calc_disparity(img0, img1):
@@ -268,7 +309,7 @@ def eval_kitti2015(model, folder, consistency, filtering, vizdir):
 	for root, dirs, filenames in os.walk(folder+'/image_2/'):
 		for filename in filenames:
 			if True:
-				ret = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros=ignore_calc_zeros)
+				ret = compute_kitti_result_for_image_pair(_calc_disparity, folder, filename, show=False, vizdir=vizdir, ignore_calc_zeros=ignore_calc_zeros, use_census=census)
 				if ret is not None:
 					p, nep = ret
 					print("%s        |        %.1f" % (filename, 100*p))
@@ -321,6 +362,7 @@ def parse_args():
 	parser.add_argument('--filtering', type=str, default="median", help='filtering applied to the raw disparity map')
 	parser.add_argument('--vizdir', type=str, default=None, help='directory where to store visualizations')
 	parser.add_argument('--consistency', action="store_true", help='add this flag if you want to add left-right consistency and median check')
+	parser.add_argument('--census', action="store_true", help='census transform to image before mccnn')
 
 	return parser.parse_args()
 
@@ -328,5 +370,5 @@ if __name__ == "__main__":
 	args = parse_args()
 	print("")
 	model = make_model(args.modeldef, args.loadpath)
-	p = eval_kitti2015(model, args.kittipath, args.consistency, args.filtering, args.vizdir)
+	p = eval_kitti2015(model, args.kittipath, args.consistency, args.filtering, args.vizdir, args.census)
 	print("* bad points: %.2f%%" % p)
