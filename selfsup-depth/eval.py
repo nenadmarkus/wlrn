@@ -3,7 +3,6 @@ import numpy as np
 import time
 import os
 import sys
-import math
 import cv2
 
 usecuda = torch.cuda.is_available()
@@ -101,6 +100,10 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 		f1 = F1[:, :, 0:end_idx-i]
 		#
 		scores[:, i:end_idx, i] = torch.sum(torch.mul(f0, f1), 0)
+	#
+	from gradmap import get_edge_enhancer
+	enh = torch.from_numpy(get_edge_enhancer(img0, img1, max_disp=max_disp))
+	scores = torch.mul(enh, scores)
 	#
 	if showdisponclick: show_disparity_graph(img0, img1, scores)
 	sims, disps = torch.max(scores, 2)
