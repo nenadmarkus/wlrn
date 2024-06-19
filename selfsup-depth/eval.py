@@ -262,7 +262,7 @@ def eval_kitti2015(model, folder, consistency, filtering, vizdir):
 		if not consistency:
 			return calc_disparity(model, img0, img1, filtering=filtering)
 		else:
-			return apply_consistency_filtering(model, img0, img1, 0, 0, None, filtering=filtering)
+			return apply_consistency_filtering(model, img0, img1, 0, None, None, filtering=filtering)
 
 	nimages = 0
 	pctbadpts = 0
