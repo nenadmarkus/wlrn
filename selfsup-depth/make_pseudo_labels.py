@@ -1,9 +1,7 @@
 import torch
 import numpy as np
-import time
 import os
 import sys
-import math
 import cv2
 import sys
 from PIL import Image
