@@ -102,7 +102,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 		scores[:, i:end_idx, i] = torch.sum(torch.mul(f0, f1), 0)
 	#
 	from gradmap import get_edge_enhancer
-	enh = torch.from_numpy(get_edge_enhancer(img0, img1, max_disp=max_disp))
+	enh = torch.from_numpy(get_edge_enhancer(img0, img1, max_disp=max_disp)).to(scores.device)
 	scores = torch.mul(enh, scores)
 	#
 	if showdisponclick: show_disparity_graph(img0, img1, scores)
@@ -214,7 +214,14 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		).float()
 	#disp[:, 0:200] = 0
 	#
-	disp_calculated = _calc_disparity(img0, img1)
+	if type(_calc_disparity) is not str:
+		disp_calculated = _calc_disparity(img0, img1)
+	else:
+		disp_calculated = torch.from_numpy(
+			#cv2.imread(os.path.join(_calc_disparity, name), cv2.IMREAD_GRAYSCALE)
+			cv2.imread(os.path.join(_calc_disparity, name), cv2.IMREAD_ANYDEPTH) / 256.0
+		).float()
+		disp_calculated = disp_calculated[0:disp.shape[0], 0:disp.shape[1]]
 
 	# for gound truth: "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
 	# for predicted: we can doscard some values based on low matching threshold
