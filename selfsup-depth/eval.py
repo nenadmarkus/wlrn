@@ -150,6 +150,20 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 		costvol = (2048*dists).cpu().int().numpy()
 		disps = sgm.run(costvol, max_disp)
 		disps = torch.from_numpy(disps)
+	elif "lowe_ratio" in filtering:
+		if "," not in filtering:
+			threshold = 1.5
+		else:
+			threshold = int(filtering.split(",")[1]) / 100
+		top2_sims, top2_disps = torch.topk(scores, 2, dim=2, largest=True)
+
+		# calculate Lowe's ratio
+		ratio = top2_sims[:, :, 0] / top2_sims[:, :, 1]
+		mask = ratio > threshold
+		#print(f"HxW = {top2_sims.shape[0] * top2_sims.shape[1]}")
+		#print("Number of True values in mask:", torch.sum(mask).item())
+		disps = torch.where(mask, top2_disps[:, :, 0], torch.zeros_like(top2_disps[:, :, 0]))
+		disps = disps.cpu().byte()
 	else:
 		print("* invalid filtering parameter")
 		sys.exit()
@@ -222,6 +236,8 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 			cv2.imread(os.path.join(_calc_disparity, name), cv2.IMREAD_ANYDEPTH) / 256.0
 		).float()
 		disp_calculated = disp_calculated[0:disp.shape[0], 0:disp.shape[1]]
+
+	#disp_calculated[0:128, :] = 0
 
 	# for gound truth: "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
 	# for predicted: we can doscard some values based on low matching threshold
