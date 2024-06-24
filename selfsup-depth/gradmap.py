@@ -79,7 +79,7 @@ def get_edge_enhancer(l, r, max_disp=255, max_amp=64):
         #
         D[:, i:end_idx, i][v] = torch.max(torch.abs(f0 - f1), 0)[0][v]
 
-    scores = torch.ones((gml.shape[0], gml.shape[1], max_disp), dtype=torch.float32)
+    scores = torch.zeros((gml.shape[0], gml.shape[1], max_disp), dtype=torch.float32)
     scores[D < COL_THR] = max_amp
 
     return scores.numpy()
