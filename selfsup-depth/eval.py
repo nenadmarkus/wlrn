@@ -237,6 +237,11 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 		).float()
 		disp_calculated = disp_calculated[0:disp.shape[0], 0:disp.shape[1]]
 
+	guidefolder = "/home/nmarkus/dev/stereo/tinyrend/RAFT-Stereo/datasets/raftpseudolabels/"
+	guide = cv2.imread(os.path.join(guidefolder, name), cv2.IMREAD_ANYDEPTH) / 256.0
+	guide = torch.from_numpy(guide[0:disp.shape[0], 0:disp.shape[1]].astype(np.float32))
+	disp[ torch.abs(guide - disp) > 1 ] = 0
+
 	#disp_calculated[0:128, :] = 0
 
 	# for gound truth: "A 0 value indicates an invalid pixel (ie, no ground truth exists, or the estimation algorithm didn't produce an estimate for that pixel)"
