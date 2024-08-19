@@ -27,13 +27,14 @@ def main(args):
 	lr_consistency = True
 	#
 	model = make_model(args[0], args[1])
-	def _calc_disparity(img0, img1):
+	def _calc_disparity(img0, img1, g=None):
 		if not lr_consistency:
+			if g is not None: raise Exception("not implemented!")
 			d = calc_disparity(model, img0, img1, filtering=args[2]).float().numpy()
 			d[:, 0:100] = 0 # ignore the left part of image: matching-based disparities cannot be calculated correctly here
 			d[0:100, :] = 0 # ignore the sky, trees
 		else:
-			d = apply_consistency_filtering(model, img0, img1, 0, None, None, filtering=args[2]).float().numpy()
+			d = apply_consistency_filtering(model, img0, img1, 0, None, None, filtering=args[2], guide=g).float().numpy()
 			d[0:50, :] = 0 # ignore the sky, trees
 		return d
 	#
@@ -41,17 +42,19 @@ def main(args):
 	for root, dirnames, filenames in os.walk(args[3]):
 		for filename in filenames:
 			if filename.endswith("-l.jpg"):
-				samples.append((
+				samples.append([
 					os.path.join(root, filename),
 					os.path.join(root, filename).replace("-l.jpg", "-r.jpg")
-				))
+				])
+				if len(args) == 5: samples[-1].append(os.path.join(args[4], filename+".png"))
 	#
 	for sample in samples:
 		#
 		img0 = load_gray_tensor(sample[0])
 		img1 = load_gray_tensor(sample[1])
+		g = None if len(sample)==2 else sample[2]
 		#
-		d = _calc_disparity(img0, img1).astype(np.uint8)
+		d = _calc_disparity(img0, img1, g=g).astype(np.uint8)
 		p = sample[0].replace("-l.jpg", "-d.png")
 
 		print(p)
@@ -65,7 +68,7 @@ def main(args):
 		img.save(p)
 
 if __name__ == "__main__":
-	if len(sys.argv) != 5:
-		print("* args: <modeldef> <params> <filtering> <lr_folder>")
+	if len(sys.argv) < 5:
+		print("* args: <modeldef> <params> <filtering> <lr_folder> [g_folder]")
 	else:
 		main(sys.argv[1:])

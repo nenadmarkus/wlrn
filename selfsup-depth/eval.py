@@ -171,7 +171,7 @@ def calc_disparity(model, img0, img1, max_disp=96, filtering=None, showdisponcli
 	#
 	return disps
 
-def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, softmax_consist, max_disp=96, filtering=None):
+def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consist_thr, softmax_consist, max_disp=96, filtering=None, guide=None):
 	lr_disp = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=filtering, showdisponclick=False)
 	rl_disp = torch.flip(calc_disparity(model, torch.flip(img1, [2]), torch.flip(img0, [2]), max_disp=max_disp, filtering=filtering), [1])
 	#
@@ -190,6 +190,13 @@ def apply_consistency_filtering(model, img0, img1, lr_consist_thr, median_consis
 	if softmax_consist is not None:
 		smax_disp_med = calc_disparity(model, img0, img1, max_disp=max_disp, filtering=softmax_consist)
 		lr_disp[ torch.abs(lr_disp-smax_disp_med)>0 ] = 0
+	#
+	if guide is not None:
+		print("* applying guide: " + guide)
+		guide = cv2.imread(guide, cv2.IMREAD_ANYDEPTH) / 256.0
+		guide = torch.from_numpy(guide.astype(np.float32))
+		guide = guide[0:lr_disp.shape[0], 0:lr_disp.shape[1]]
+		lr_disp[ torch.abs(guide - lr_disp) > 1 ] = 0
 	#
 	return lr_disp
 
@@ -229,18 +236,15 @@ def compute_kitti_result_for_image_pair(_calc_disparity, folder, name, show=True
 	#disp[:, 0:200] = 0
 	#
 	if type(_calc_disparity) is not str:
-		disp_calculated = _calc_disparity(img0, img1)
+		guidefolder = "/home/nmarkus/dev/stereo/tinyrend/RAFT-Stereo/datasets/raftpseudolabels_kittitrain/"
+		guide = os.path.join(guidefolder, name)
+		disp_calculated = _calc_disparity(img0, img1, guide)
 	else:
 		disp_calculated = torch.from_numpy(
 			#cv2.imread(os.path.join(_calc_disparity, name), cv2.IMREAD_GRAYSCALE)
 			cv2.imread(os.path.join(_calc_disparity, name), cv2.IMREAD_ANYDEPTH) / 256.0
 		).float()
 		disp_calculated = disp_calculated[0:disp.shape[0], 0:disp.shape[1]]
-
-	guidefolder = "/home/nmarkus/dev/stereo/tinyrend/RAFT-Stereo/datasets/raftpseudolabels/"
-	guide = cv2.imread(os.path.join(guidefolder, name), cv2.IMREAD_ANYDEPTH) / 256.0
-	guide = torch.from_numpy(guide[0:disp.shape[0], 0:disp.shape[1]].astype(np.float32))
-	disp[ torch.abs(guide - disp) > 1 ] = 0
 
 	#disp_calculated[0:128, :] = 0
 
@@ -286,11 +290,12 @@ def eval_kitti2015(model, folder, consistency, filtering, vizdir):
 	print("* ignore_calc_zeros: " + str(ignore_calc_zeros))
 	print("")
 
-	def _calc_disparity(img0, img1):
+	def _calc_disparity(img0, img1, g=None):
 		if not consistency:
+			if g is not None: raise Exception("not implemented!")
 			return calc_disparity(model, img0, img1, filtering=filtering)
 		else:
-			return apply_consistency_filtering(model, img0, img1, 0, None, None, filtering=filtering)
+			return apply_consistency_filtering(model, img0, img1, 0, None, None, filtering=filtering, guide=g)
 
 	nimages = 0
 	pctbadpts = 0
