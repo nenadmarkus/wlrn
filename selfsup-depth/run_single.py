@@ -12,9 +12,9 @@ def get_gray_tensor(img):
 def calculate_dispmap(l, r, model, filtering="none", lr_consistency = True):
 	def _calc_disparity(img0, img1):
 		if not lr_consistency:
-			d = calc_disparity(model, img0, img1, filtering=filtering).float().numpy()
+			d = calc_disparity(model, img0, img1, filtering=filtering, max_disp=255).float().numpy()
 		else:
-			d = apply_consistency_filtering(model, img0, img1, 0, 0, None, filtering=filtering).float().numpy()
+			d = apply_consistency_filtering(model, img0, img1, 0, 0, None, filtering=filtering, max_disp=255).float().numpy()
 		return d
 	tn_l = get_gray_tensor(l)
 	tn_r = get_gray_tensor(r)
@@ -35,7 +35,7 @@ def main(args):
 		l = cv2.imread(args[3], cv2.IMREAD_GRAYSCALE)
 		r = cv2.imread(args[4], cv2.IMREAD_GRAYSCALE)
 
-	d = calculate_dispmap(l, r, model)
+	d = calculate_dispmap(l, r, model, lr_consistency=True)
 
 	print(d.shape, np.max(d), np.min(d))
 
